@@ -10,7 +10,8 @@ void readMap(int level);
 void printMap();
 
 void main(){
-    readMap(2);
+    readMap(5);
+    printf("%d %d\n",map_rows, map_cols);
     printMap();
 }
 
@@ -22,9 +23,10 @@ void readMap(int level){
     char temp_char;
     int count = 0;
 
+    // 파일을 읽어서 map배열을 동적할당할 크기를 알아냄
     map_file = fopen("map.txt","r");
     while((temp_char = fgetc(map_file)) != EOF){
-        if(temp_char == 'm'){
+        if(temp_char == 'm'|| temp_char == 'e'){
             map_level++;
         }
         if(map_level != level)
@@ -44,6 +46,8 @@ void readMap(int level){
     map_rows = row-1;
     map_cols = col;
     fclose(map_file);
+
+    // map 배열 동적할당하고, 적당히 초기화 한 후,  파일 내용을 읽어옴
     map = (char**)malloc(map_rows*sizeof(char*));
     for(int i=0; i<map_rows; i++)
         *(map + i) = (char*)malloc(map_cols*sizeof(char));
