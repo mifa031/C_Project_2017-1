@@ -10,46 +10,85 @@ void readMap(int level);
 void printMap();
 
 void main(){
-    readMap(1);
+    readMap(2);
+    printMap();
 }
 
 void readMap(int level){
     FILE* map_file;
     int map_level = 0;
     int row=0, col=0;
-    char map;
-    int temp_col1 = 0;
-    int temp_col2 = 0;
+    int temp_col = 0;
+    char temp_char;
+    int count = 0;
 
     map_file = fopen("map.txt","r");
-    while((map = fgetc(map_file)) != EOF){
-        temp_col1++;
-
-        if(map == 'm'){
+    while((temp_char = fgetc(map_file)) != EOF){
+        if(temp_char == 'm'){
             map_level++;
-            if(map_level > level){
-                map_level = level;
-                break;
-            }
         }
-        if(map == '\n'){
+        if(map_level != level)
+            continue;
+
+        temp_col++;
+
+        if(temp_char == '\n'){
             row++;
-            if(temp_col1 > temp_col2){
-                temp_col2 = temp_col1;
-                temp_col1 = 0;
+            if(temp_col > col){
+                col = temp_col;
+            }
+            temp_col=0;
+        }
+    }
+
+    map_rows = row-1;
+    map_cols = col;
+    fclose(map_file);
+    map = (char**)malloc(map_rows*sizeof(char*));
+    for(int i=0; i<map_rows; i++)
+        *(map + i) = (char*)malloc(map_cols*sizeof(char));
+
+    for(int i=0; i<map_rows; i++)
+        for(int j=0; j<map_cols; j++)
+            map[i][j] = ' ';
+
+    map_file = fopen("map.txt","r");
+    map_level = 0;
+    count = 0;
+    for(int i=0; i<map_rows; i++){
+        for(int j=0; j<map_cols; j++){
+            map[i][j] = fgetc(map_file);
+            if(map[i][j] == 'm'){
+                map[i][j] = fgetc(map_file);
+                map_level++;
+            }
+            if(map_level != level){
+                i=0; j=-1;
+                continue;
+            }
+            if(map[i][j] == 'a')
+                map[i][j] = fgetc(map_file);
+            if(map[i][i] == 'p')
+                map[i][j] = fgetc(map_file);
+            if(map[i][j] == '\n' && count ==0){
+                count++;
+                map[i][j] = fgetc(map_file);
+            }
+            if(map[i][j] == '\n'){
+                for(; j<map_cols-1; j++)
+                    map[i][j] = ' ';
+                if(map[i][j] == ' ' || map[i][j] == '\n')
+                    map[i][j] = '\n';
             }
         }
     }
-    map_rows = row-1;
-    map_cols = temp_col2;
-
-    printf("%d\n",map_rows);
-    printf("%d\n%d\n",map_cols,map_level);
+    fclose(map_file);
 }
 
 void printMap(){
     for(int i=0; i<map_rows; i++){
-       for(int j=0; j<map_cols; j++)
-            printf("%c",map[i][j]);
+        for(int j=0; j<map_cols; j++)
+            putchar(map[i][j]);
     }
+    printf("\n");
 }
