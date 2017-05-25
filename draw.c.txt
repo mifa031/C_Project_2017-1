@@ -1,0 +1,19 @@
+  1 void draw()
+  2 {
+  3         char draw;
+  4         int mapx, mapy;
+  5         int x,y;
+  6
+  7
+  8         for (y = 0; y < 18; y++){// 18이랑 21은 임의로 정한 맵의 크기입니다.
+  9                 for (x = 0; x < 21; x++){
+ 10                         if (stage[y][x] == '@')
+ 11                         {
+ 12                                 mapx = x;
+ 13                                 mapy = y;
+ 14                                 stage[y][x] = ' ';
+ 15                         }
+ 16                 }
+ 17         }
+ 18         return ;
+ 19 }
