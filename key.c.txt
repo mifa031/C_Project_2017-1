@@ -1,0 +1,75 @@
+  1 #define L 104
+  2 #define R 105
+  3 #define U 107
+  4 #define D 106
+  5
+  6 //방향키 아스키코드 정의
+  7
+  8 void Key_point()//함수 설정
+  9 {
+ 10         char stage[18][21]; //stage 배열 이름은 임의로 설정한 것입니다.
+ 11                            //배열 크기도 임시로 정했습니다.
+ 12         int key;
+ 13         int dx = 0;
+ 14         int dy = 0;
+ 15         int x,y;
+ 16         int mapx, mapy;
+ 17
+ 18         key = getchar();
+ 19
+ 20         switch (key)
+ 21         {
+ 22                 case L:
+ 23                 dx = -1;
+ 24                 dy = 0;
+ 25                 break;
+ 26
+ 27                 case D:
+ 28                 dx = 0;
+ 29                 dy = -1;
+ 30                 break;
+ 31
+ 32                 case U:
+ 33                 dx = 0;
+ 34                 dy = +1;
+ 35                 break;
+ 36
+ 37                 case R:
+ 38                 dx = +1;
+ 39                 dy = 0;
+ 40                 break;
+ 41         }
+ 42
+ 43         //stsge [][] : 스테이지 2차원 배열
+ 44         if (stage[y+dy][x+dx] == '#')
+ 45         {
+ 46                 mapx = x;// 플레이어 좌표 지정
+ 47                 mapy = y;
+ 48                 return; // 창고지기가 벽을 만나면 그대로 리턴한다.
+ 49         }
+ 50
+ 51         if (stage[y+dy][x+dx] == '$' || stage [y+dy][x+dx] == ' '){
+ 52                 mapx = x;
+ 53                 mapy = y;
+ 54                 stage[y][x] == ' ';
+ 55                 stage[y+dy][x+dx] == '@';
+ 56                 stage[y+2*dy][x+2*dy] == '$';
+ 57                 if (stage[y+2*dy][x+2*dx] == 'O'){
+ 58                         stage[y+2*dy][x+2*dx] == ' ';
+ 59                         stage[y+2*dy][x+2*dx] == '$';
+ 60                 }
+ 61         }
+ 62
+ 63                 // 창고지기가 빈공간이나 박스를 만나면 원래있던 자리는 공백>    으로 채우고 그다음 공간을 창고지기로 채운다.
+ 64                 // 박스는 그다음 자리로 이동한다.
+ 65                 return;
+ 66         }
+ 67
+ 68
+ 69 void main()
+ 70 {
+ 71         while(1)
+ 72         {
+ 73                 Key_point();
+ 74         }
+ 75 }
