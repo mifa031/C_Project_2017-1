@@ -16,7 +16,7 @@
                  if (StageClear()){
                          end = clock(); // 스테이지를 클리어하면, 시간 측정 종료
                          duration = (end - start) / CLOCKS_PER_SEC; // 걸린 시간 측정
-                         ranking_file = fopen("ranking.txt","wt"); // 측정한 시간을 ranking 파일에 넣는다.
+                         ranking_file = fopen("ranking.txt","at"); // 측정한 시간을 ranking 파일에 넣는다.
                          fprintf(ranking_file, "%.1f sec",duration);
                          fclose(ranking_file);
                  }
