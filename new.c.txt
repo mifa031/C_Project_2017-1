@@ -1,0 +1,24 @@
+ #include <time.h>
+
+
+ void Key_point() // key_point 함수에 추가할 내용
+ {
+
+         clock_t start, end;
+         double duration;
+         FILE* ranking_file;
+
+         if (Key == 'n' || key == 'N')
+         {
+                 readMap();
+                 printMap(); // 처음 맵을 불러옴
+                 start = clock(); // 처음부터 시간 측정
+                 if (StageClear()){
+                         end = clock(); // 스테이지를 클리어하면, 시간 측정 종료
+                         duration = (end - start) / CLOCKS_PER_SEC; // 걸린 시간 측정
+                         ranking_file = fopen("ranking.txt","wt"); // 측정한 시간을 ranking 파일에 넣는다.
+                         fprintf(ranking_file, "%.1f sec",duration);
+                         fclose(ranking_file);
+                 }
+         }
+ }
