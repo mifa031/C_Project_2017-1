@@ -12,6 +12,7 @@ void readMap(int level);
 void printMap();
 
 void main(){
+    //동작 테스트용 코드
     readMap(1);
     printf("%d %d\n",map_rows, map_cols);
     printMap();
@@ -24,6 +25,8 @@ void readMap(int level){
     int temp_col;
     char temp_char;
     int count = 0;
+    int gold_count = 0;
+    int store_count = 0;
 
     // 파일을 읽어서 stage의 크기를 알아냄
     map_file = fopen("map.txt","r");
@@ -68,7 +71,6 @@ void readMap(int level){
             if(map_level != level){
                 i=0; j=-1;
                 continue;
-                continue;
             }
             if(map[i][j] == 'a')
                 map[i][j] = fgetc(map_file);
@@ -84,7 +86,15 @@ void readMap(int level){
                 if(map[i][j] == ' ' || map[i][j] == '\n')
                     map[i][j] = '\n';
             }
+            if(map[i][j] == '$')
+                gold_count++;
+            if(map[i][j] == 'O')
+                store_count++;
         }
+    }
+    if(gold_count != store_count){
+        printf("$와 0의 개수가 같지않아 종료합니다.\n");
+        exit(1);
     }
     fclose(map_file);
 }
