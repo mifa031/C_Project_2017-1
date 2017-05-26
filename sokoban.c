@@ -7,15 +7,22 @@
 char map[MAX_RC][MAX_RC];
 int map_rows;
 int map_cols;
+char user_name[10];
 
 void readMap(int level);
 void printMap();
 
 void main(){
-    //동작 테스트용 코드
-    readMap(1);
-    printf("%d %d\n",map_rows, map_cols);
-    printMap();
+    printf("Start....\n");
+    while(1){
+        printf("input name : ");
+        gets(user_name);
+        user_name[10] = '\0';
+        printf("%s\n",user_name);
+        while(1){
+        break;
+        }
+    }
 }
 
 void readMap(int level){
