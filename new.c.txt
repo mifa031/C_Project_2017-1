@@ -1,22 +1,22 @@
  #include <time.h>
 
 
- void Key_point() // key_point ÇÔ¼ö¿¡ Ãß°¡ÇÒ ³»¿ë
+ void Key_point() // key_point í•¨ìˆ˜ì— ì¶”ê°€í•  ë‚´ìš©
  {
 
          clock_t start, end;
          double duration;
          FILE* ranking_file;
 
-         if (Key == 'n' || key == 'N')
+ Â  Â  Â  Â  if (key == 'n' || key == 'N')
          {
                  readMap();
-                 printMap(); // Ã³À½ ¸ÊÀ» ºÒ·¯¿È
-                 start = clock(); // Ã³À½ºÎÅÍ ½Ã°£ ÃøÁ¤
+                 printMap(); // ì²˜ìŒ ë§µì„ ë¶ˆëŸ¬ì˜´
+                 start = clock(); // ì²˜ìŒë¶€í„° ì‹œê°„ ì¸¡ì •
                  if (StageClear()){
-                         end = clock(); // ½ºÅ×ÀÌÁö¸¦ Å¬¸®¾îÇÏ¸é, ½Ã°£ ÃøÁ¤ Á¾·á
-                         duration = (end - start) / CLOCKS_PER_SEC; // °É¸° ½Ã°£ ÃøÁ¤
-                         ranking_file = fopen("ranking.txt","wt"); // ÃøÁ¤ÇÑ ½Ã°£À» ranking ÆÄÀÏ¿¡ ³Ö´Â´Ù.
+                         end = clock(); // ìŠ¤í…Œì´ì§€ë¥¼ í´ë¦¬ì–´í•˜ë©´, ì‹œê°„ ì¸¡ì • ì¢…ë£Œ
+                         duration = (end - start) / CLOCKS_PER_SEC; // ê±¸ë¦° ì‹œê°„ ì¸¡ì •
+                         ranking_file = fopen("ranking.txt","wt"); // ì¸¡ì •í•œ ì‹œê°„ì„ ranking íŒŒì¼ì— ë„£ëŠ”ë‹¤.
                          fprintf(ranking_file, "%.1f sec",duration);
                          fclose(ranking_file);
                  }
