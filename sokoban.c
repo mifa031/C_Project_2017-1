@@ -18,30 +18,111 @@ void readMap(int level);
 void printMap();
 void displayHelp();
 int getch();
+void screen_clear();
+void top();
 
 void main(){
     while(1){
         printf("input name : ");
         gets(user_name);
         user_name[10] = '\0';
-        system("clear");
+        screen_clear();
         while(1){
             char command = getch();
             switch(command){
                 case 'd':
                     displayHelp();
                     command = getch();
+                    screen_clear();
+                    break;
+                case 'n':
+                    //현재까지의 시간기록 삭제 후 첫번째 맵부터 다시시작
+                    break;
+                case 'e':
+                    //현재 상태 파일에 저장하고 종료
+                    exit(0);
+                case 't':
+                    top();
                 default:
-                    printf("Hello %s\n\n",user_name);
                     start = clock();
                     readMap(1);
                     printMap();
                     end = clock();
                     t1 = (float) ((end - start) / CLOCKS_PER_SEC);
                     command = getch();
+                    screen_clear();
             }
         }
     }
+}
+
+void top(){
+        int key= getch();
+        switch(key)
+        {
+            char buf[10000];
+            char buf_sec[2000];
+            float sec;
+            int map_num;
+
+            case 1:
+            fopen("ranking.txt","r");
+            while(fscanf(fopen("ranking.txt","r"),"%s  %f%s",buf,sec,buf_sec )!="map 2")
+             {
+                 printf("%s  %f%s",buf,sec,buf_sec);
+             }
+            fclose(fopen("ranking.txt","r"));
+            break;
+
+            case 2:
+            fopen("ranking.txt","r");
+            while(fscanf(fopen("ranking.txt","r"),"%s  %f%s",buf,sec,buf_sec )!="map 3")
+             {
+                 printf("%s  %f%s",buf,sec,buf_sec);
+             }
+            fclose(fopen("ranking.txt","r"));
+            break;
+
+            case 3:
+            fopen("ranking.txt","r");
+            while(fscanf(fopen("ranking.txt","r"),"%s  %f%s",buf,sec,buf_sec )!="map 2")
+             {
+                 printf("%s  %f%s",buf,sec,buf_sec);
+             }
+            fclose(fopen("ranking.txt","r"));
+            break;
+
+            case 4:
+            fopen("ranking.txt","r");
+            while(fscanf(fopen("ranking.txt","r"),"%s  %f%s",buf,sec,buf_sec )!="map 2")
+             {
+                 printf("%s  %f%s",buf,sec,buf_sec);
+             }
+            fclose(fopen("ranking.txt","r"));
+            break;
+
+            case 5:
+            fopen("ranking.txt","r");
+            while(fscanf(fopen("ranking.txt","r"),"%s  %f%s",buf,sec,buf_sec )!="map 2")
+             {
+                 printf("%s  %f%s",buf,sec,buf_sec);
+             }
+            fclose(fopen("ranking.txt","r"));
+            break;
+
+            default :
+            fopen("ranking.txt","r");
+            while(ranking = fgetc(fopen("ranking.txt","r"))!=EOF)
+            {
+                putc(ranking,stdout);
+            }
+            fclose(fopen("ranking.txt","r"));
+        }
+}
+
+void screen_clear(){
+    system("clear");
+    printf("Hello %s\n\n",user_name);
 }
 
 void displayHelp(){
@@ -159,4 +240,3 @@ int getch(void){
     tcsetattr(0, TCSAFLUSH, &save);
     return ch;
 }
-                                               
