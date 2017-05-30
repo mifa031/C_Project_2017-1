@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <termio.h>
+#include <stdlib.h>
 
 #define MAX_STAGE 5
 #define MAX_RC 30
@@ -11,7 +13,6 @@ void readMap(int level);
 void printMap();
 
 void main(){
-while(1)
 readMap(1);
 printMap();
 }
@@ -26,7 +27,7 @@ void readMap(int level){
     int gold_count = 0;
     int store_count = 0;
 
-    // ÆÄÀÏÀ» ÀĞ¾î¼­ stageÀÇ Å©±â¸¦ ¾Ë¾Æ³¿
+    // íŒŒì¼ì„ ì½ì–´ì„œ stageì˜ í¬ê¸°ë¥¼ ì•Œì•„ëƒ„
     map_file = fopen("map.txt","r");
     while((temp_char = fgetc(map_file)) != EOF){
         if(temp_char == 'm'|| temp_char == 'e'){
@@ -50,7 +51,7 @@ void readMap(int level){
     map_cols = col;
     fclose(map_file);
 
-    // map ¹è¿­ Àû´çÈ÷ ÃÊ±âÈ­ ÇÑ ÈÄ,  ÆÄÀÏ ³»¿ëÀ» ÀĞ¾î¿È
+    // map ë°°ì—´ ì ë‹¹íˆ ì´ˆê¸°í™” í•œ í›„,  íŒŒì¼ ë‚´ìš©ì„ ì½ì–´ì˜´
 
     for(int i=0; i<MAX_RC; i++)
         for(int j=0; j<MAX_RC; j++)
@@ -91,7 +92,7 @@ void readMap(int level){
         }
     }
     if(gold_count != store_count){
-        printf("$¿Í 0ÀÇ °³¼ö°¡ °°Áö¾Ê¾Æ Á¾·áÇÕ´Ï´Ù.\n");
+        printf("$ì™€ 0ì˜ ê°œìˆ˜ê°€ ê°™ì§€ì•Šì•„ ì¢…ë£Œí•©ë‹ˆë‹¤.\n");
         exit(1);
     }
     fclose(map_file);
