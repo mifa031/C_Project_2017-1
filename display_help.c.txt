@@ -1,11 +1,12 @@
  #define d 100
 
- void Key_point() // Key_point ÇÔ¼ö¿¡ Ãß°¡ÇÒ ³»¿ëÀÔ´Ï´Ù.
+ void Key_point() // Key_point í•¨ìˆ˜ì— ì¶”ê°€í•  ë‚´ìš©ì…ë‹ˆë‹¤.
  {
 
          if (key == d)
          {
-                 printf("h(¿ŞÂÊ), j(¾Æ·¡), k(À§), l(¿À¸¥ÂÊ)\n");
+                 system("clear");
+                 printf("h(ì™¼ìª½), j(ì•„ë˜), k(ìœ„), l(ì˜¤ë¥¸ìª½)\n");
                  printf("u(undo)\n");
                  printf("r(replay)\n");
                  printf("n(new)\n");
@@ -15,4 +16,7 @@
                  printf("d(display help)\n");
                  printf("t(top)\n");
          }
+         sleep(5);
+         system("clear");
+         printMap();
  }
