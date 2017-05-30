@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <termio.h>
 
 #define MAX_STAGE 5
 #define MAX_RC 50
@@ -15,23 +16,44 @@ float t1,t2,t3,t4,t5;
 
 void readMap(int level);
 void printMap();
+void displayHelp();
+int getch();
 
 void main(){
-    printf("Start....\n");   
-    printf("input name : ");    
-    gets(user_name);    
-    user_name[10] = '\0';    
-    system("clear");    
-    while(1){        
-        while(1){            
-            printf("Hello %s\n\n",user_name);            
-            start = clock();            
-            readMap(1);            
-            printMap();            
-            end = clock();            
-            t1 = (float) ((end - start) / CLOCKS_PER_SEC);        
-        }    
+    while(1){
+        printf("input name : ");
+        gets(user_name);
+        user_name[10] = '\0';
+        system("clear");
+        while(1){
+            char command = getch();
+            switch(command){
+                case 'd':
+                    displayHelp();
+                    command = getch();
+                default:
+                    printf("Hello %s\n\n",user_name);
+                    start = clock();
+                    readMap(1);
+                    printMap();
+                    end = clock();
+                    t1 = (float) ((end - start) / CLOCKS_PER_SEC);
+                    command = getch();
+            }
+        }
     }
+}
+
+void displayHelp(){
+    printf("h(����), j(�Ʒ�), k(��), l(������)\n");
+    printf("u(undo)\n");
+    printf("r(replay)\n");
+    printf("n(new)\n");
+    printf("e(exit)\n");
+    printf("s(save)\n");
+    printf("f(file load)\n");
+    printf("d(display help)\n");
+    printf("t(top)\n");
 }
 
 void readMap(int level){
@@ -44,7 +66,7 @@ void readMap(int level){
     int gold_count = 0;
     int store_count = 0;
 
-    // 파일을 읽어서 stage의 크기를 알아냄
+    // ������ �о stage�� ũ�⸦ �˾Ƴ�
     map_file = fopen("map.txt","r");
     while((temp_char = fgetc(map_file)) != EOF){
         if(temp_char == 'm'|| temp_char == 'e'){
@@ -68,7 +90,7 @@ void readMap(int level){
     map_cols = col;
     fclose(map_file);
 
-    // map 배열 적당히 초기화 한 후,  파일 내용을 읽어옴
+    // map �迭 ������ �ʱ�ȭ �� ��,  ���� ������ �о��
 
     for(int i=0; i<MAX_RC; i++)
         for(int j=0; j<MAX_RC; j++)
@@ -109,7 +131,7 @@ void readMap(int level){
         }
     }
     if(gold_count != store_count){
-        printf("$와 0의 개수가 같지않아 종료합니다.\n");
+        printf("$�� 0�� ������ �����ʾ� �����մϴ�.\n");
         exit(1);
     }
     fclose(map_file);
@@ -122,3 +144,19 @@ void printMap(){
     }
     printf("\n");
 }
+
+int getch(void){
+    int ch;
+    struct termios buf;
+    struct termios save;
+    tcgetattr(0, &save);
+    buf = save;
+    buf.c_lflag&=~(ICANON|ECHO);
+    buf.c_cc[VMIN] = 1;
+    buf.c_cc[VTIME] = 0;
+    tcsetattr(0, TCSAFLUSH, &buf);
+    ch = getchar();
+    tcsetattr(0, TCSAFLUSH, &save);
+    return ch;
+}
+                                               
