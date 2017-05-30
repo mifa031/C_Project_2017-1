@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define MAX_STAGE 5
 #define MAX_RC 50
@@ -7,25 +8,30 @@
 char map[MAX_RC][MAX_RC];
 int map_rows;
 int map_cols;
+
 char user_name[10];
+clock_t start, end;
+float t1,t2,t3,t4,t5;
 
 void readMap(int level);
 void printMap();
 
 void main(){
-    printf("Start....\n");    
+    printf("Start....\n");   
+    printf("input name : ");    
+    gets(user_name);    
+    user_name[10] = '\0';    
+    system("clear");    
     while(1){        
-        printf("input name : ");        
-        gets(user_name);        
-        user_name[10] = '\0';        
-        system("clear");        
         while(1){            
             printf("Hello %s\n\n",user_name);            
+            start = clock();            
             readMap(1);            
-            printMap();        
+            printMap();            
+            end = clock();            
+            t1 = (float) ((end - start) / CLOCKS_PER_SEC);        
         }    
     }
-
 }
 
 void readMap(int level){
