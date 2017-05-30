@@ -1,0 +1,35 @@
+ void Key_point()//함수 설정
+{
+        char key = getch();
+         int dx = 0;
+         int dy = 0;
+         int x,y;
+         int mapx, mapy;
+
+
+        switch (key)
+        {
+                 case 'h':
+                       if(map[mapx-1][mapy] == ' '){
+                                 gotoxy(mapx,mapy);
+                                 map[mapx][mapy] == ' ';
+                                 map[mapx-1][mapy] == '@';
+                                 mapx -= 1;
+                         }
+
+                 break;
+
+                 case 'j':
+                 dx = 0;
+                 dy = -1;
+	         break;
+
+                 case 'k':
+                 dx = 0;
+                 dy = +1;
+                 break;
+
+                 case 'i':
+                 dx = +1;
+                 dy = 0;
+                 break;
