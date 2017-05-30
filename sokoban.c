@@ -13,16 +13,19 @@ void readMap(int level);
 void printMap();
 
 void main(){
-    printf("Start....\n");
-    while(1){
-        printf("input name : ");
-        gets(user_name);
-        user_name[10] = '\0';
-        printf("%s\n",user_name);
-        while(1){
-        break;
-        }
+    printf("Start....\n");    
+    while(1){        
+        printf("input name : ");        
+        gets(user_name);        
+        user_name[10] = '\0';        
+        system("clear");        
+        while(1){            
+            printf("Hello %s\n\n",user_name);            
+            readMap(1);            
+            printMap();        
+        }    
     }
+
 }
 
 void readMap(int level){
@@ -35,7 +38,7 @@ void readMap(int level){
     int gold_count = 0;
     int store_count = 0;
 
-    // ������ �о stage�� ũ�⸦ �˾Ƴ�
+    // 파일을 읽어서 stage의 크기를 알아냄
     map_file = fopen("map.txt","r");
     while((temp_char = fgetc(map_file)) != EOF){
         if(temp_char == 'm'|| temp_char == 'e'){
@@ -59,7 +62,7 @@ void readMap(int level){
     map_cols = col;
     fclose(map_file);
 
-    // map �迭 ������ �ʱ�ȭ �� ��,  ���� ������ �о��
+    // map 배열 적당히 초기화 한 후,  파일 내용을 읽어옴
 
     for(int i=0; i<MAX_RC; i++)
         for(int j=0; j<MAX_RC; j++)
@@ -100,7 +103,7 @@ void readMap(int level){
         }
     }
     if(gold_count != store_count){
-        printf("$�� 0�� ������ �����ʾ� �����մϴ�.\n");
+        printf("$와 0의 개수가 같지않아 종료합니다.\n");
         exit(1);
     }
     fclose(map_file);
