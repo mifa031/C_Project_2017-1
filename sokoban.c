@@ -4,120 +4,87 @@
 #include <termio.h>
 
 #define MAX_STAGE 5
-#define MAX_RC 50
+#define MAX_RC 30
 
 char map[MAX_RC][MAX_RC];
 int map_rows;
 int map_cols;
 
 char user_name[10];
-clock_t start, end;
-float t1,t2,t3,t4,t5;
+clock_t start, end;   // 스테이지 시작 및 끝 시각
+float t1,t2,t3,t4,t5; // 스테이지별 클리어 시간
+int Px,Py; // 플레이어 위치
+int stage = 1; // 현재 스테이지
 
 void readMap(int level);
 void printMap();
 void displayHelp();
 int getch();
 void screen_clear();
-void top();
+void move(char dir);
 
 void main(){
+    char cmd;
     while(1){
         printf("input name : ");
         gets(user_name);
         user_name[10] = '\0';
         screen_clear();
         while(1){
-            char command = getch();
-            switch(command){
-                case 'd':
-                    displayHelp();
-                    command = getch();
-                    screen_clear();
-                    break;
-                case 'n':
+            readMap(stage);
+            start = clock();
+            while(1){
+                printMap();
+                cmd = getch();
+                switch(cmd){
+                    case 'h':
+                    case 'j':
+                    case 'k':
+                    case 'l':
+                        move(cmd);
+                        screen_clear();
+                        break;
+                    case 'd':
+                        displayHelp();
+                        cmd = getch();
+                        screen_clear();
+                        break;
+                    case 'n':
                     //현재까지의 시간기록 삭제 후 첫번째 맵부터 다시시작
-                    break;
-                case 'e':
+                        break;
+                    case 'e':
                     //현재 상태 파일에 저장하고 종료
-                    exit(0);
-                case 't':
-                    top();
-                default:
-                    start = clock();
-                    readMap(1);
-                    printMap();
-                    end = clock();
-                    t1 = (float) ((end - start) / CLOCKS_PER_SEC);
-                    command = getch();
-                    screen_clear();
+                        end = clock();
+                        t1 = (float) ((end - start) /  CLOCKS_PER_SEC);
+                        exit(0);
+                    case 't':
+                        break;
             }
         }
+                    end = clock();
+                    t1 = (float) ((end - start) / CLOCKS_PER_SEC);
+    }
     }
 }
 
-void top(){
-        int key= getch();
-        switch(key)
-        {
-            char buf[10000];
-            char buf_sec[2000];
-            float sec;
-            int map_num;
+void move(char dir){
 
-            case 1:
-            fopen("ranking.txt","r");
-            while(fscanf(fopen("ranking.txt","r"),"%s  %f%s",buf,sec,buf_sec )!="map 2")
-             {
-                 printf("%s  %f%s",buf,sec,buf_sec);
-             }
-            fclose(fopen("ranking.txt","r"));
+    map[Py][Px] = ' ';
+
+    switch(dir){
+        case 'h':
+            Px = Px - 1;
             break;
-
-            case 2:
-            fopen("ranking.txt","r");
-            while(fscanf(fopen("ranking.txt","r"),"%s  %f%s",buf,sec,buf_sec )!="map 3")
-             {
-                 printf("%s  %f%s",buf,sec,buf_sec);
-             }
-            fclose(fopen("ranking.txt","r"));
+        case 'j':
+            Py = Py + 1;
             break;
-
-            case 3:
-            fopen("ranking.txt","r");
-            while(fscanf(fopen("ranking.txt","r"),"%s  %f%s",buf,sec,buf_sec )!="map 2")
-             {
-                 printf("%s  %f%s",buf,sec,buf_sec);
-             }
-            fclose(fopen("ranking.txt","r"));
+        case 'k':
+            Py = Py - 1;
             break;
-
-            case 4:
-            fopen("ranking.txt","r");
-            while(fscanf(fopen("ranking.txt","r"),"%s  %f%s",buf,sec,buf_sec )!="map 2")
-             {
-                 printf("%s  %f%s",buf,sec,buf_sec);
-             }
-            fclose(fopen("ranking.txt","r"));
+        case 'l':
+            Px = Px + 1;
             break;
-
-            case 5:
-            fopen("ranking.txt","r");
-            while(fscanf(fopen("ranking.txt","r"),"%s  %f%s",buf,sec,buf_sec )!="map 2")
-             {
-                 printf("%s  %f%s",buf,sec,buf_sec);
-             }
-            fclose(fopen("ranking.txt","r"));
-            break;
-
-            default :
-            fopen("ranking.txt","r");
-            while(ranking = fgetc(fopen("ranking.txt","r"))!=EOF)
-            {
-                putc(ranking,stdout);
-            }
-            fclose(fopen("ranking.txt","r"));
-        }
+    }
 }
 
 void screen_clear(){
@@ -183,6 +150,12 @@ void readMap(int level){
     for(int i=0; i<map_rows; i++){
         for(int j=0; j<map_cols; j++){
             map[i][j] = fgetc(map_file);
+
+            if(map[i][j] == '@'){ // 초기 플레이어 위치 세팅
+                Px = j;
+                Py = i;
+            }
+
             if(map[i][j] == 'm'){
                 map[i][j] = fgetc(map_file);
                 map_level++;
@@ -219,6 +192,7 @@ void readMap(int level){
 }
 
 void printMap(){
+    map[Py][Px] = '@';
     for(int i=0; i<map_rows; i++){
         for(int j=0; j<map_cols; j++)
             putchar(map[i][j]);
