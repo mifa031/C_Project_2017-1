@@ -17,9 +17,6 @@ int Px,Py; // 플레이어 위치
 int stage = 1; // 현재 스테이지
 int undo_x[5] = {0};
 int undo_count=0;
-int wall_x[MAX_RC] = {0};
-int wall_y[MAX_RC] = {0};
-int wall_count=0;
 int slot_x[MAX_RC] = {0};
 int slot_y[MAX_RC] = {0};
 int slot_count=0;
