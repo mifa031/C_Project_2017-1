@@ -43,8 +43,6 @@ void main(){
         screen_clear();
         while(1){
             readMap(stage);
-            for(int i=0; i<gold_count; i++)
-            printf("%d %d\n",gold_y[i],gold_x[i]);
             start = clock();
             while(1){
                 printMap();
@@ -87,55 +85,72 @@ void move(char dir){
             Px = Px - 1;
             if(map[Py][Px] == '#')
                 Px = Px + 1;
-            /*if(map[Py][Px] == '$'){
+            if(map[Py][Px] == '$'){
                 for(int i=0; i<gold_count; i++){
                     if((gold_x[i] == Px) && (gold_y[i] == Py)){
                         gold_x[i] = gold_x[i] - 1;
+                        if((map[gold_y[i]][gold_x[i]] == '#') ||
+                           (map[gold_y[i]][gold_x[i]] == '$')){
+                            gold_x[i] = gold_x[i] + 1;
+                            Px = Px + 1;
+                        }
                     }
                 }
-            }*/
+            }
             break;
         case 'j':
             Py = Py + 1;
             if(map[Py][Px] == '#')
                 Py = Py - 1;
-             /*if(map[Py][Px] == '$'){
+            if(map[Py][Px] == '$'){
                 for(int i=0; i<gold_count; i++){
-                    if((gold_x[i] == Px )&& (gold_y[i] == Py)){
+                    if((gold_x[i] == Px) && (gold_y[i] == Py)){
                         gold_y[i] = gold_y[i] + 1;
+                        if((map[gold_y[i]][gold_x[i]] == '#') ||
+                           (map[gold_y[i]][gold_x[i]] == '$')){
+                            gold_y[i] = gold_y[i] - 1;
+                            Py = Py - 1;
+                        }
                     }
                 }
-            }*/
-
+            }
             break;
         case 'k':
             Py = Py - 1;
             if(map[Py][Px] == '#')
                 Py = Py + 1;
-             /*if(map[Py][Px] == '$'){
+             if(map[Py][Px] == '$'){
                 for(int i=0; i<gold_count; i++){
                     if((gold_x[i] == Px) && (gold_y[i] == Py)){
                         gold_y[i] = gold_y[i] - 1;
+                        if((map[gold_y[i]][gold_x[i]] == '#') ||
+                           (map[gold_y[i]][gold_x[i]] == '$')){
+                            gold_y[i] = gold_y[i] + 1;
+                            Py = Py + 1;
+                        }
                     }
                 }
-            }*/
+            }
             break;
         case 'l':
             Px = Px + 1;
             if(map[Py][Px] == '#')
                 Px = Px - 1;
-             /*if(map[Py][Px] == '$'){
+            if(map[Py][Px] == '$'){
                 for(int i=0; i<gold_count; i++){
-                    if((gold_x[i] == Px && gold_y[i] == Py)){
+                    if((gold_x[i] == Px) && (gold_y[i] == Py)){
                         gold_x[i] = gold_x[i] + 1;
+                        if((map[gold_y[i]][gold_x[i]] == '#') ||
+                           (map[gold_y[i]][gold_x[i]] == '$')){
+                            gold_x[i] = gold_x[i] - 1;
+                            Px = Px - 1;
+                        }
                     }
                 }
-            }*/
-
+            }
             break;
     }
 }
-
 void screen_clear(){
     system("clear");
     printf("Hello %s\n\n",user_name);
@@ -171,6 +186,7 @@ void readMap(int level){
             continue;
 
         temp_col++;
+
         if(temp_char == '\n'){
             row++;
             if(temp_col > col){
