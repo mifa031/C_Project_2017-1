@@ -11,10 +11,10 @@ int map_rows;
 int map_cols;
 
 char user_name[10];
-clock_t start, end;   // ½ºÅ×ÀÌÁö ½ÃÀÛ ¹× ³¡ ½Ã°¢
-float t1,t2,t3,t4,t5; // ½ºÅ×ÀÌÁöº° Å¬¸®¾î ½Ã°£
-int Px,Py; // ÇÃ·¹ÀÌ¾î À§Ä¡
-int stage = 1; // ÇöÀç ½ºÅ×ÀÌÁö
+clock_t start, end;   // ìŠ¤í…Œì´ì§€ ì‹œì‘ ë° ë ì‹œê°
+float t1,t2,t3,t4,t5; // ìŠ¤í…Œì´ì§€ë³„ í´ë¦¬ì–´ ì‹œê°„
+int Px,Py; // í”Œë ˆì´ì–´ ìœ„ì¹˜
+int stage = 1; // í˜„ì¬ ìŠ¤í…Œì´ì§€
 int undo_x[5] = {0};
 int undo_count=0;
 int slot_x[MAX_RC] = {0};
@@ -58,10 +58,10 @@ void main(){
                         screen_clear();
                         break;
                     case 'n':
-                    //ÇöÀç±îÁöÀÇ ½Ã°£±â·Ï »èÁ¦ ÈÄ Ã¹¹øÂ° ¸ÊºÎÅÍ ´Ù½Ã½ÃÀÛ
+                    //í˜„ì¬ê¹Œì§€ì˜ ì‹œê°„ê¸°ë¡ ì‚­ì œ í›„ ì²«ë²ˆì§¸ ë§µë¶€í„° ë‹¤ì‹œì‹œì‘
                         break;
                     case 'e':
-                    //ÇöÀç »óÅÂ ÆÄÀÏ¿¡ ÀúÀåÇÏ°í Á¾·á
+                    //í˜„ì¬ ìƒíƒœ íŒŒì¼ì— ì €ì¥í•˜ê³  ì¢…ë£Œ
                         end = clock();
                         t1 = (float) ((end - start) /  CLOCKS_PER_SEC);
                         exit(0);
@@ -154,7 +154,7 @@ void screen_clear(){
 }
 
 void displayHelp(){
-    printf("h(¿ŞÂÊ), j(¾Æ·¡), k(À§), l(¿À¸¥ÂÊ)\n");
+    printf("h(ì™¼ìª½), j(ì•„ë˜), k(ìœ„), l(ì˜¤ë¥¸ìª½)\n");
     printf("u(undo)\n");
     printf("r(replay)\n");
     printf("n(new)\n");
@@ -173,7 +173,7 @@ void readMap(int level){
     char temp_char;
     int count = 0;
 
-    // ÆÄÀÏÀ» ÀĞ¾î¼­ stageÀÇ Å©±â¸¦ ¾Ë¾Æ³¿
+    // íŒŒì¼ì„ ì½ì–´ì„œ stageì˜ í¬ê¸°ë¥¼ ì•Œì•„ëƒ„
     map_file = fopen("map.txt","r");
     while((temp_char = fgetc(map_file)) != EOF){
         if(temp_char == 'm'|| temp_char == 'e'){
@@ -197,7 +197,7 @@ void readMap(int level){
     map_cols = col;
     fclose(map_file);
 
-    // map ¹è¿­ Àû´çÈ÷ ÃÊ±âÈ­ ÇÑ ÈÄ,  ÆÄÀÏ ³»¿ëÀ» ÀĞ¾î¿È
+    // map ë°°ì—´ ì ë‹¹íˆ ì´ˆê¸°í™” í•œ í›„,  íŒŒì¼ ë‚´ìš©ì„ ì½ì–´ì˜´
 
     for(int i=0; i<MAX_RC; i++)
         for(int j=0; j<MAX_RC; j++)
@@ -210,13 +210,9 @@ void readMap(int level){
         for(int j=0; j<map_cols; j++){
             map[i][j] = fgetc(map_file);
 
-            if(map[i][j] == '@'){ // ÃÊ±â ÇÃ·¹ÀÌ¾î À§Ä¡ ¼¼ÆÃ
+            if(map[i][j] == '@'){ // ì´ˆê¸° í”Œë ˆì´ì–´ ìœ„ì¹˜ ì„¸íŒ…
                 Px = j;
                 Py = i;
-            }else if(map[i][j] == '#'){
-                wall_x[wall_count] = j;
-                wall_y[wall_count] = i;
-                wall_count++;
             }else if(map[i][j] == 'O'){
                 slot_x[slot_count] = j;
                 slot_y[slot_count] = i;
@@ -240,7 +236,7 @@ void readMap(int level){
                 map[i][j] = fgetc(map_file);
             if(map[i][i] == 'p')
                 map[i][j] = fgetc(map_file);
-            if(map[i][j] == '\n' && count ==0){ //»ó´Ü¿¡ map±ÛÀÚ ¾ÈÀĞ¾î¿Àµµ·Ï
+            if(map[i][j] == '\n' && count ==0){ //ìƒë‹¨ì— mapê¸€ì ì•ˆì½ì–´ì˜¤ë„ë¡
                 count++;
                 map[i][j] = fgetc(map_file);
             }
@@ -254,7 +250,7 @@ void readMap(int level){
         }
     }
     if(gold_count != slot_count){
-        printf("$¿Í 0ÀÇ °³¼ö°¡ °°Áö¾Ê¾Æ Á¾·áÇÕ´Ï´Ù.\n");
+        printf("$ì™€ 0ì˜ ê°œìˆ˜ê°€ ê°™ì§€ì•Šì•„ ì¢…ë£Œí•©ë‹ˆë‹¤.\n");
         exit(1);
     }
     fclose(map_file);
