@@ -15,6 +15,17 @@ clock_t start, end;   // 스테이지 시작 및 끝 시각
 float t1,t2,t3,t4,t5; // 스테이지별 클리어 시간
 int Px,Py; // 플레이어 위치
 int stage = 1; // 현재 스테이지
+int undo_x[5] = {0};
+int undo_count=0;
+int wall_x[MAX_RC] = {0};
+int wall_y[MAX_RC] = {0};
+int wall_count=0;
+int slot_x[MAX_RC] = {0};
+int slot_y[MAX_RC] = {0};
+int slot_count=0;
+int gold_x[MAX_RC] = {0};
+int gold_y[MAX_RC] = {0};
+int gold_count=0;
 
 void readMap(int level);
 void printMap();
@@ -32,6 +43,8 @@ void main(){
         screen_clear();
         while(1){
             readMap(stage);
+            for(int i=0; i<gold_count; i++)
+            printf("%d %d\n",gold_y[i],gold_x[i]);
             start = clock();
             while(1){
                 printMap();
@@ -68,21 +81,57 @@ void main(){
 }
 
 void move(char dir){
-
     map[Py][Px] = ' ';
-
     switch(dir){
         case 'h':
             Px = Px - 1;
+            if(map[Py][Px] == '#')
+                Px = Px + 1;
+            /*if(map[Py][Px] == '$'){
+                for(int i=0; i<gold_count; i++){
+                    if((gold_x[i] == Px) && (gold_y[i] == Py)){
+                        gold_x[i] = gold_x[i] - 1;
+                    }
+                }
+            }*/
             break;
         case 'j':
             Py = Py + 1;
+            if(map[Py][Px] == '#')
+                Py = Py - 1;
+             /*if(map[Py][Px] == '$'){
+                for(int i=0; i<gold_count; i++){
+                    if((gold_x[i] == Px )&& (gold_y[i] == Py)){
+                        gold_y[i] = gold_y[i] + 1;
+                    }
+                }
+            }*/
+
             break;
         case 'k':
             Py = Py - 1;
+            if(map[Py][Px] == '#')
+                Py = Py + 1;
+             /*if(map[Py][Px] == '$'){
+                for(int i=0; i<gold_count; i++){
+                    if((gold_x[i] == Px) && (gold_y[i] == Py)){
+                        gold_y[i] = gold_y[i] - 1;
+                    }
+                }
+            }*/
             break;
         case 'l':
             Px = Px + 1;
+            if(map[Py][Px] == '#')
+                Px = Px - 1;
+             /*if(map[Py][Px] == '$'){
+                for(int i=0; i<gold_count; i++){
+                    if((gold_x[i] == Px && gold_y[i] == Py)){
+                        gold_x[i] = gold_x[i] + 1;
+                    }
+                }
+            }*/
+
             break;
     }
 }
@@ -111,8 +160,6 @@ void readMap(int level){
     int temp_col;
     char temp_char;
     int count = 0;
-    int gold_count = 0;
-    int store_count = 0;
 
     // 파일을 읽어서 stage의 크기를 알아냄
     map_file = fopen("map.txt","r");
@@ -124,7 +171,6 @@ void readMap(int level){
             continue;
 
         temp_col++;
-
         if(temp_char == '\n'){
             row++;
             if(temp_col > col){
@@ -154,7 +200,20 @@ void readMap(int level){
             if(map[i][j] == '@'){ // 초기 플레이어 위치 세팅
                 Px = j;
                 Py = i;
+            }else if(map[i][j] == '#'){
+                wall_x[wall_count] = j;
+                wall_y[wall_count] = i;
+                wall_count++;
+            }else if(map[i][j] == 'O'){
+                slot_x[slot_count] = j;
+                slot_y[slot_count] = i;
+                slot_count++;
+            }else if(map[i][j] == '$'){
+                gold_x[gold_count] = j;
+                gold_y[gold_count] = i;
+                gold_count++;
             }
+
 
             if(map[i][j] == 'm'){
                 map[i][j] = fgetc(map_file);
@@ -168,23 +227,20 @@ void readMap(int level){
                 map[i][j] = fgetc(map_file);
             if(map[i][i] == 'p')
                 map[i][j] = fgetc(map_file);
-            if(map[i][j] == '\n' && count ==0){
+            if(map[i][j] == '\n' && count ==0){ //상단에 map글자 안읽어오도록
                 count++;
                 map[i][j] = fgetc(map_file);
             }
             if(map[i][j] == '\n'){
                 for(; j<map_cols-1; j++)
                     map[i][j] = ' ';
+
                 if(map[i][j] == ' ' || map[i][j] == '\n')
                     map[i][j] = '\n';
             }
-            if(map[i][j] == '$')
-                gold_count++;
-            if(map[i][j] == 'O')
-                store_count++;
         }
     }
-    if(gold_count != store_count){
+    if(gold_count != slot_count){
         printf("$와 0의 개수가 같지않아 종료합니다.\n");
         exit(1);
     }
@@ -193,9 +249,18 @@ void readMap(int level){
 
 void printMap(){
     map[Py][Px] = '@';
+
+    for(int k=0; k<slot_count; k++){
+        if(map[slot_y[k]][slot_x[k]] == ' ')
+            map[slot_y[k]][slot_x[k]] = 'O';
+    }
+    for(int k=0; k<gold_count; k++){
+        map[gold_y[k]][gold_x[k]] = '$';
+    }
     for(int i=0; i<map_rows; i++){
-        for(int j=0; j<map_cols; j++)
+        for(int j=0; j<map_cols; j++){
             putchar(map[i][j]);
+        }
     }
     printf("\n");
 }
