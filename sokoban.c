@@ -53,6 +53,7 @@ void main(){
                         screen_clear();
                         break;
                     case 'd':
+                        screen_clear();
                         displayHelp();
                         cmd = getch();
                         screen_clear();
@@ -66,6 +67,12 @@ void main(){
                         t1 = (float) ((end - start) /  CLOCKS_PER_SEC);
                         exit(0);
                     case 't':
+                        break;
+                    case 'r':
+                        screen_clear();
+                        readMap(stage);
+                        pritMap();
+                        screen_clear();
                         break;
             }
         }
