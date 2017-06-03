@@ -1,0 +1,6 @@
+case 'r':
+  screen_clear();
+  readMap(stage);
+  printMap();
+  screen_clear();
+  break;
