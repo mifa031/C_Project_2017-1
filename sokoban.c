@@ -1,35 +1,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include<unistd.h>
+#include<sys/time.h>
 #include <termio.h>
 
-#define MAX_STAGE 5
-#define MAX_RC 30
+#define MAX_STAGE 5            //ÃÖ´ë ¸Ê °³¼ö
+#define MAX_RC 30              //ÃÖ´ë row ¶Ç´Â column °³¼ö
 
-char map[MAX_RC][MAX_RC];
-int map_rows;
-int map_cols;
+char map[MAX_RC][MAX_RC];      // ¸Ş¸ğ¸® »ó¿¡ ¿Ã·ÁµÑ map ¹è¿­
+int map_rows;                  // stageÀÇ ÃÖ´ë Çà °³¼ö
+int map_cols;                  // stageÀÇ ÃÖ´ë ¿­ °³¼ö
 
 char user_name[10];
-clock_t start, end;   // ìŠ¤í…Œì´ì§€ ì‹œì‘ ë° ë ì‹œê°
-float t1,t2,t3,t4,t5; // ìŠ¤í…Œì´ì§€ë³„ í´ë¦¬ì–´ ì‹œê°„
-int Px,Py; // í”Œë ˆì´ì–´ ìœ„ì¹˜
-int stage = 1; // í˜„ì¬ ìŠ¤í…Œì´ì§€
+struct timeval start, end;   // ½ºÅ×ÀÌÁö ½ÃÀÛ ¹× ³¡ ½Ã°¢
+double t[MAX_STAGE]; // ½ºÅ×ÀÌÁöº° Å¬¸®¾î ½Ã°£
+int Px,Py; // ÇÃ·¹ÀÌ¾î À§Ä¡
+int stage = 1; // ÇöÀç ½ºÅ×ÀÌÁö
 int undo_x[5] = {0};
-int undo_count=0;
+int undo_y[5] = {0};               // undo ½ÇÇàÀ» À§ÇØ ÀÌÀü À§Ä¡ ÀúÀå
+int undo_count=0;                  // undo ½ÇÇà È½¼ö
 int slot_x[MAX_RC] = {0};
-int slot_y[MAX_RC] = {0};
-int slot_count=0;
+int slot_y[MAX_RC] = {0};          //slot À§Ä¡
+int slot_count=0;                 //slot °³¼ö
 int gold_x[MAX_RC] = {0};
-int gold_y[MAX_RC] = {0};
-int gold_count=0;
+int gold_y[MAX_RC] = {0};          // gold À§Ä¡
+int gold_count=0;                 // gold °³¼ö
+int stage_cleared_flag[5] = {0}; // ½ºÅ×ÀÌÁö Å¬¸®¾î Ç¥½Ã
 
-void readMap(int level);
-void printMap();
-void displayHelp();
-int getch();
-void screen_clear();
-void move(char dir);
+void readMap(int level); // ·¹º§¿¡ µû¶ó ¸Ê ·Îµå
+void printMap();         // È­¸é¿¡ ¸Ê Ãâ·Â
+void displayHelp();      // µµ¿ò¸» º¸¿©ÁÖ´Â ÇÔ¼ö
+int getch();             // Å°º¸µå ÀÔ·ÂÀ» ¹Ş´Â ÇÔ¼ö
+void screen_clear();     // È­¸éÀ» Áö¿ì°í ÇÃ·¹ÀÌ¾î¸í ¶ç¿ì´Â ÇÔ¼ö
+void move(char dir);     // ÇÃ·¹ÀÌ¾î ÀÌµ¿ ±¸Çö ÇÔ¼ö
+int isCleared();         // ½ºÅ×ÀÌÁö Å¬¸®¾îÇßÀ¸¸é 1, ¸øÇßÀ¸¸é 0 ¸®ÅÏ
+double time_diff(struct timeval *end, struct timeval *start); // ³¡-½ÃÀÛ ½Ã°£Â÷ ¸®ÅÏ
 
 void main(){
     char cmd;
@@ -39,68 +45,100 @@ void main(){
         user_name[10] = '\0';
         screen_clear();
         while(1){
+            for(int i=0; i<MAX_STAGE; i++){ // flag¸¦ Á¶»çÇÏ¿© Å¬¸®¾îÇÑ ½ºÅ×ÀÌÁö´Â skip
+                if(stage_cleared_flag[stage-1] == 1){
+                    stage++;
+                }
+            }
+            screen_clear();
             readMap(stage);
-            start = clock();
+            gettimeofday(&start,NULL);
             while(1){
                 printMap();
+                if(isCleared()){
+                    stage_cleared_flag[stage-1] = 1;
+                    break;
+                }
                 cmd = getch();
                 switch(cmd){
                     case 'h':
                     case 'j':
                     case 'k':
-                    case 'l':
+                    case 'l': //¹æÇâ ÀÌµ¿ ±¸Çö
                         move(cmd);
                         screen_clear();
                         break;
-                    case 'd':
+                    case 'd': //dispaly help
                         screen_clear();
                         displayHelp();
                         cmd = getch();
                         screen_clear();
                         break;
-                    case 'n':
-                    //í˜„ì¬ê¹Œì§€ì˜ ì‹œê°„ê¸°ë¡ ì‚­ì œ í›„ ì²«ë²ˆì§¸ ë§µë¶€í„° ë‹¤ì‹œì‹œì‘
+                    case 'n': //ÇöÀç±îÁöÀÇ ½Ã°£±â·Ï »èÁ¦ ÈÄ Ã¹¹øÂ° ¸ÊºÎÅÍ ´Ù½Ã½ÃÀÛ
                         screen_clear();
+                        for(int i=0; i<stage; i++)
+                            t[i] = 0;
                         readMap(1);
                         printMap();
-                        start = clock();
                         screen_clear();
                         break;
-                    case 'e':
-                    //í˜„ì¬ ìƒíƒœ íŒŒì¼ì— ì €ì¥í•˜ê³  ì¢…ë£Œ
-                        end = clock();
-                        t1 = (float) ((end - start) /  CLOCKS_PER_SEC);
+                    case 'e': //ÇöÀç »óÅÂ ÆÄÀÏ¿¡ ÀúÀåÇÏ°í Á¾·á
+                        printf("%d\n",t[stage-1]);
+                        system("clear");
+                        printf("\n\n\n\nS E E   Y O U   %s . . . .\n\n\n\n",user_name);
                         exit(0);
                     case 't':
                         break;
-                    case 'r':
+                    case 'r': //°ÔÀÓ½Ã°£ À¯ÁöÇÏ¸ç ÇöÀç ¸Ê Àç½ÃÀÛ
                         screen_clear();
                         readMap(stage);
-                        pritMap();
+                        printMap();
                         screen_clear();
                         break;
             }
         }
-                    end = clock();
-                    t1 = (float) ((end - start) / CLOCKS_PER_SEC);
+                    gettimeofday(&end,NULL);
+                    t[stage-1] = time_diff(&end, &start);
     }
     }
 }
+double time_diff(struct timeval *end, struct timeval *start){
+    double diff_sec = difftime(end->tv_sec,start->tv_sec); // ÃÊ´ÜÀ§ ½Ã°£Â÷
+    double diff_milsec = end->tv_usec - start->tv_usec;    // ³ª³ëÃÊ ´ÜÀ§ ½Ã°£Â÷
+    diff_milsec /= (double) 1000000;               //³ª³ëÃÊ¸¦ ¹Ğ¸®ÃÊ ´ÜÀ§·Î º¯°æ
+    diff_sec += diff_milsec;                       // ÃÊ´ÜÀ§ + ¹Ğ¸®ÃÊ ´ÜÀ§
+    return diff_sec;                             // ¹Ğ¸®ÃÊ±îÁö Á¤È®ÇÑ ½Ã°£Â÷
+}
+
+int isCleared(){
+    int matched_count = 0;
+
+    for(int i=0; i<slot_count; i++){
+        for(int j=0; j<gold_count; j++){
+            if(slot_x[i] == gold_x[j] && slot_y[i] == gold_y[j])
+                matched_count++;  // slot°ú gold À§Ä¡°¡ °°´Ù¸é matched_count Áõ°¡
+        }
+    }
+
+    if(matched_count == slot_count) // ¼­·Î À§Ä¡°¡ °°Àº °³¼ö°¡ slot°³¼ö¿Í ÀÏÄ¡ÇÏ¸é
+        return 1; // Âü
+    return 0;     // °ÅÁş
+}
 
 void move(char dir){
-    map[Py][Px] = ' ';
+    map[Py][Px] = ' '; // ´ÙÀ½ ÀÌµ¿À» À§ÇØ ÇöÀç @¸¦ È­¸é¿¡¼­ Áö¿ò
     switch(dir){
         case 'h':
-            Px = Px - 1;
-            if(map[Py][Px] == '#')
+            Px = Px - 1; // @ ÀÌµ¿ ±¸Çö
+            if(map[Py][Px] == '#') //º®À» ¸¸³ª¸é ÀÌµ¿ Ãë¼Ò
                 Px = Px + 1;
-            if(map[Py][Px] == '$'){
+            if(map[Py][Px] == '$'){ //ÀÌµ¿ÇÑ °÷¿¡ $°¡ ÀÖ´Ù¸é
                 for(int i=0; i<gold_count; i++){
-                    if((gold_x[i] == Px) && (gold_y[i] == Py)){
-                        gold_x[i] = gold_x[i] - 1;
-                        if((map[gold_y[i]][gold_x[i]] == '#') ||
-                           (map[gold_y[i]][gold_x[i]] == '$')){
-                            gold_x[i] = gold_x[i] + 1;
+                    if((gold_x[i] == Px) && (gold_y[i] == Py)){ // ÇØ´ç $ÀÇ index¸¦ Ã£¾Æ³»¼­
+                        gold_x[i] = gold_x[i] - 1;           // @¿Í µ¿ÀÏÇÑ ¹æÇâÀ¸·Î ÀÌµ¿
+                        if((map[gold_y[i]][gold_x[i]] == '#') || //$°¡ ¿òÁ÷ÀÎ ¹æÇâ¿¡ #ÀÌ³ª
+                           (map[gold_y[i]][gold_x[i]] == '$')){ // $°¡ ÀÖ´Ù¸é
+                            gold_x[i] = gold_x[i] + 1;          // $ ¹× @ ÀÌµ¿ Ãë¼Ò
                             Px = Px + 1;
                         }
                     }
@@ -166,7 +204,7 @@ void screen_clear(){
 }
 
 void displayHelp(){
-    printf("h(ì™¼ìª½), j(ì•„ë˜), k(ìœ„), l(ì˜¤ë¥¸ìª½)\n");
+    printf("h(¿ŞÂÊ), j(¾Æ·¡), k(À§), l(¿À¸¥ÂÊ)\n");
     printf("u(undo)\n");
     printf("r(replay)\n");
     printf("n(new)\n");
@@ -176,7 +214,6 @@ void displayHelp(){
     printf("d(display help)\n");
     printf("t(top)\n");
 }
-
 void readMap(int level){
     FILE* map_file;
     int map_level = 0;
@@ -184,8 +221,11 @@ void readMap(int level){
     int temp_col;
     char temp_char;
     int count = 0;
+    slot_count = 0;
+    gold_count = 0;
+    undo_count = 0;
 
-    // íŒŒì¼ì„ ì½ì–´ì„œ stageì˜ í¬ê¸°ë¥¼ ì•Œì•„ëƒ„
+    // ÆÄÀÏÀ» ÀĞ¾î¼­ stageÀÇ Å©±â¸¦ ¾Ë¾Æ³¿
     map_file = fopen("map.txt","r");
     while((temp_char = fgetc(map_file)) != EOF){
         if(temp_char == 'm'|| temp_char == 'e'){
@@ -209,7 +249,7 @@ void readMap(int level){
     map_cols = col;
     fclose(map_file);
 
-    // map ë°°ì—´ ì ë‹¹íˆ ì´ˆê¸°í™” í•œ í›„,  íŒŒì¼ ë‚´ìš©ì„ ì½ì–´ì˜´
+    // map ¹è¿­ Àû´çÈ÷ ÃÊ±âÈ­ ÇÑ ÈÄ,  ÆÄÀÏ ³»¿ëÀ» ÀĞ¾î¿È
 
     for(int i=0; i<MAX_RC; i++)
         for(int j=0; j<MAX_RC; j++)
@@ -222,14 +262,16 @@ void readMap(int level){
         for(int j=0; j<map_cols; j++){
             map[i][j] = fgetc(map_file);
 
-            if(map[i][j] == '@'){ // ì´ˆê¸° í”Œë ˆì´ì–´ ìœ„ì¹˜ ì„¸íŒ…
+            if(map[i][j] == '@'){ // ÃÊ±â ÇÃ·¹ÀÌ¾î À§Ä¡ ¼¼ÆÃ
                 Px = j;
                 Py = i;
-            }else if(map[i][j] == 'O'){
+            }
+            if(map[i][j] == 'O'){ // ÃÊ±â slot À§Ä¡ ¹× °³¼ö ¾Ë¾Æ³»±â
                 slot_x[slot_count] = j;
                 slot_y[slot_count] = i;
                 slot_count++;
-            }else if(map[i][j] == '$'){
+            }
+            if(map[i][j] == '$'){ // ÃÊ±â gold À§Ä¡ ¹× °³¼ö ¾Ë¾Æ³»±â
                 gold_x[gold_count] = j;
                 gold_y[gold_count] = i;
                 gold_count++;
@@ -242,13 +284,15 @@ void readMap(int level){
             }
             if(map_level != level){
                 i=0; j=-1;
+                slot_count = 0;
+                gold_count = 0;
                 continue;
             }
             if(map[i][j] == 'a')
                 map[i][j] = fgetc(map_file);
             if(map[i][i] == 'p')
                 map[i][j] = fgetc(map_file);
-            if(map[i][j] == '\n' && count ==0){ //ìƒë‹¨ì— mapê¸€ì ì•ˆì½ì–´ì˜¤ë„ë¡
+            if(map[i][j] == '\n' && count ==0){ //»ó´Ü¿¡ map±ÛÀÚ ¾ÈÀĞ¾î¿Àµµ·Ï
                 count++;
                 map[i][j] = fgetc(map_file);
             }
@@ -262,25 +306,29 @@ void readMap(int level){
         }
     }
     if(gold_count != slot_count){
-        printf("$ì™€ 0ì˜ ê°œìˆ˜ê°€ ê°™ì§€ì•Šì•„ ì¢…ë£Œí•©ë‹ˆë‹¤.\n");
+        printf("$¿Í 0ÀÇ °³¼ö°¡ °°Áö¾Ê¾Æ Á¾·áÇÕ´Ï´Ù.\n");
         exit(1);
     }
     fclose(map_file);
 }
 
 void printMap(){
-    map[Py][Px] = '@';
+    map[Py][Px] = '@'; // ÇÃ·¹ÀÌ¾îÀÇ ÀÌµ¿ÀÌ ÇöÀç ±¸ÇöµÈ À§Ä¡¿¡ @ Ãâ·Â
 
-    for(int k=0; k<slot_count; k++){
+    int row, col;
+    for(int k=0; k<slot_count; k++){ // @ÀÇ ÀÌµ¿À¸·Î ÀÎÇØ slot À§Ä¡°¡ °ø¹éÀÌ µÇÁö¾Êµµ·Ï
         if(map[slot_y[k]][slot_x[k]] == ' ')
             map[slot_y[k]][slot_x[k]] = 'O';
     }
+
+// @ÀÇ ÀÌµ¿À¸·Î ÀÎÇØ gold À§Ä¡°¡ °ø¹éÀÌ µÇÁö¾Ê°í slotÀ§¿¡ gold°¡ ¿Ã¶ó°¡°Ô º¸ÀÏ ¼ö ÀÖµµ·Ï
     for(int k=0; k<gold_count; k++){
-        map[gold_y[k]][gold_x[k]] = '$';
+        if(map[gold_y[k]][gold_x[k]] == ' '|| map[gold_y[k]][gold_x[k]] == 'O')
+            map[gold_y[k]][gold_x[k]] = '$';
     }
     for(int i=0; i<map_rows; i++){
         for(int j=0; j<map_cols; j++){
-            putchar(map[i][j]);
+            putchar(map[i][j]);       // ÇöÀç »óÅÂÀÇ map ÀüÃ¼ Ãâ·Â
         }
     }
     printf("\n");
