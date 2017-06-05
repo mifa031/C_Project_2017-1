@@ -60,6 +60,11 @@ void main(){
                         break;
                     case 'n':
                     //현재까지의 시간기록 삭제 후 첫번째 맵부터 다시시작
+                        screen_clear();
+                        readMap(1);
+                        printMap();
+                        start = clock();
+                        screen_clear();
                         break;
                     case 'e':
                     //현재 상태 파일에 저장하고 종료
