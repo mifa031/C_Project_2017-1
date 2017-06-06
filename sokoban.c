@@ -5,6 +5,8 @@
 #include<sys/time.h>
 #include <termio.h>
 
+#define TRUE 1
+#define FALSE 0
 #define MAX_STAGE 5            //최대 맵 개수
 #define MAX_RC 30              //최대 row 또는 column 개수
 
@@ -14,18 +16,26 @@ int map_cols;                  // stage의 최대 열 개수
 
 char user_name[10];
 struct timeval start, end;   // 스테이지 시작 및 끝 시각
-double t[MAX_STAGE]; // 스테이지별 클리어 시간
-int Px,Py; // 플레이어 위치
-int stage = 1; // 현재 스테이지
-int undo_x[5] = {0};
-int undo_y[5] = {0};               // undo 실행을 위해 이전 위치 저장
-int undo_count=0;                  // undo 실행 횟수
+double t[MAX_STAGE];         // 스테이지별 클리어 시간
+int Px,Py;                // 플레이어 위치
+int stage = 1;             // 현재 스테이지
+
+int undo_point = 0;        //플레이 상태를 담은 undo배열들 중 꺼내올 index위치
+int input_index = 0;       // undo배열들 중 데이터를 담을 index
+int undo_Px[5] = {0};
+int undo_Py[5] = {0};       // undo를 위한 플레이어 위치 저장
+int undo_gold_x[5] = {-1};
+int undo_gold_y[5] = {-1};
+int undo_gold_index[5] = {-1};  //undo를 위한 gold 위치 저장
+int undo_count = 5;        // 남은 undo 실행 횟수
+
 int slot_x[MAX_RC] = {0};
 int slot_y[MAX_RC] = {0};          //slot 위치
 int slot_count=0;                 //slot 개수
 int gold_x[MAX_RC] = {0};
 int gold_y[MAX_RC] = {0};          // gold 위치
 int gold_count=0;                 // gold 개수
+
 int stage_cleared_flag[5] = {0}; // 스테이지 클리어 표시
 
 void readMap(int level); // 레벨에 따라 맵 로드
@@ -34,9 +44,10 @@ void displayHelp();      // 도움말 보여주는 함수
 int getch();             // 키보드 입력을 받는 함수
 void screen_clear();     // 화면을 지우고 플레이어명 띄우는 함수
 void move(char dir);     // 플레이어 이동 구현 함수
-int isCleared();         // 스테이지 클리어했으면 1, 못했으면 0 리턴
+int isCleared();         // 스테이지 클리어했으면 TRUE, 못했으면 FALSE 리턴
 double time_diff(struct timeval *end, struct timeval *start); // 끝-시작 시간차 리턴
-
+void undo();
+void undo_record(int iS_gold_moved, int current_gold_index);
 void main(){
     char cmd;
     while(1){
@@ -50,6 +61,7 @@ void main(){
                     stage++;
                 }
             }
+stage_start:
             screen_clear();
             readMap(stage);
             gettimeofday(&start,NULL);
@@ -78,21 +90,25 @@ void main(){
                         screen_clear();
                         for(int i=0; i<stage; i++)
                             t[i] = 0;
-                        readMap(1);
-                        printMap();
-                        screen_clear();
+                        stage = 1;
+                        goto stage_start;
                         break;
                     case 'e': //현재 상태 파일에 저장하고 종료
                         printf("%d\n",t[stage-1]);
                         system("clear");
                         printf("\n\n\n\nS E E   Y O U   %s . . . .\n\n\n\n",user_name);
                         exit(0);
+                        break;
                     case 't':
                         break;
                     case 'r': //게임시간 유지하며 현재 맵 재시작
                         screen_clear();
                         readMap(stage);
                         printMap();
+                        screen_clear();
+                        break;
+                    case 'u':
+                        undo();
                         screen_clear();
                         break;
             }
@@ -102,6 +118,66 @@ void main(){
     }
     }
 }
+
+void undo_record(int is_gold_moved, int current_gold_index){
+    // 1번째 undo 기록
+    if(input_index < undo_count && !is_gold_moved){
+        undo_Px[input_index] = Px;
+        undo_Py[input_index] = Py;
+
+        undo_gold_x[input_index] = -1;
+        undo_gold_y[input_index] = -1;
+        undo_gold_index[input_index] = -1;
+
+        undo_point = input_index;
+    }else if(input_index >= undo_count && !is_gold_moved){
+        for(int i=0; i<undo_count-1; i++){
+            undo_Px[i] = undo_Px[i+1];
+            undo_Py[i] = undo_Py[i+1];
+        }
+        undo_Px[undo_count-1] = Px;
+        undo_Py[undo_count-1] = Py;
+
+        for(int i=0; i<undo_count-1; i++){
+            undo_gold_x[i] = undo_gold_x[i+1];
+            undo_gold_y[i] = undo_gold_y[i+1];
+            undo_gold_index[i] = undo_gold_index[i+1];
+        }
+        undo_gold_x[undo_count-1] = -1;
+        undo_gold_y[undo_count-1] = -1;
+        undo_gold_index[undo_count-1] = -1;
+
+        undo_point = undo_count-1;
+    }
+    // 만약 gold의 움직임이 있다면 2번째 undo 기록 수행
+    if(input_index < undo_count && is_gold_moved){
+        undo_gold_x[input_index] = gold_x[current_gold_index];
+        undo_gold_y[input_index] = gold_y[current_gold_index];
+        undo_gold_index[input_index] = current_gold_index;
+    }else if(input_index >= undo_count && is_gold_moved){
+        undo_gold_x[undo_count-1] = gold_x[current_gold_index];
+        undo_gold_y[undo_count-1] = gold_y[current_gold_index];
+        undo_gold_index[undo_count-1] = current_gold_index;
+    }
+
+    if(input_index < undo_count)
+        input_index++;
+}
+void undo(){
+    if(undo_count > 0){      // undo_count가 남아 있다면
+        map[Py][Px] = ' ';
+        Px = undo_Px[undo_point];
+        Py = undo_Py[undo_point]; // 플레이어 위치 undo
+        if(undo_gold_index[undo_point] >= 0){
+            map[gold_y[undo_gold_index[undo_point]]][gold_x[undo_gold_index[undo_point]]] = ' ';
+            gold_x[undo_gold_index[undo_point]] = undo_gold_x[undo_point];
+            gold_y[undo_gold_index[undo_point]] = undo_gold_y[undo_point]; //gold 위치 undo
+        }
+        undo_point--;
+        undo_count--;
+    }
+}
+
 double time_diff(struct timeval *end, struct timeval *start){
     double diff_sec = difftime(end->tv_sec,start->tv_sec); // 초단위 시간차
     double diff_milsec = end->tv_usec - start->tv_usec;    // 나노초 단위 시간차
@@ -119,13 +195,13 @@ int isCleared(){
                 matched_count++;  // slot과 gold 위치가 같다면 matched_count 증가
         }
     }
-
     if(matched_count == slot_count) // 서로 위치가 같은 개수가 slot개수와 일치하면
-        return 1; // 참
-    return 0;     // 거짓
+        return TRUE;
+    return FALSE;
 }
 
 void move(char dir){
+    undo_record(FALSE,FALSE);
     map[Py][Px] = ' '; // 다음 이동을 위해 현재 @를 화면에서 지움
     switch(dir){
         case 'h':
@@ -135,6 +211,7 @@ void move(char dir){
             if(map[Py][Px] == '$'){ //이동한 곳에 $가 있다면
                 for(int i=0; i<gold_count; i++){
                     if((gold_x[i] == Px) && (gold_y[i] == Py)){ // 해당 $의 index를 찾아내서
+                        undo_record(TRUE,i);
                         gold_x[i] = gold_x[i] - 1;           // @와 동일한 방향으로 이동
                         if((map[gold_y[i]][gold_x[i]] == '#') || //$가 움직인 방향에 #이나
                            (map[gold_y[i]][gold_x[i]] == '$')){ // $가 있다면
@@ -152,6 +229,7 @@ void move(char dir){
             if(map[Py][Px] == '$'){
                 for(int i=0; i<gold_count; i++){
                     if((gold_x[i] == Px) && (gold_y[i] == Py)){
+                        undo_record(TRUE,i);
                         gold_y[i] = gold_y[i] + 1;
                         if((map[gold_y[i]][gold_x[i]] == '#') ||
                            (map[gold_y[i]][gold_x[i]] == '$')){
@@ -169,6 +247,7 @@ void move(char dir){
              if(map[Py][Px] == '$'){
                 for(int i=0; i<gold_count; i++){
                     if((gold_x[i] == Px) && (gold_y[i] == Py)){
+                        undo_record(TRUE,i);
                         gold_y[i] = gold_y[i] - 1;
                         if((map[gold_y[i]][gold_x[i]] == '#') ||
                            (map[gold_y[i]][gold_x[i]] == '$')){
@@ -186,6 +265,7 @@ void move(char dir){
             if(map[Py][Px] == '$'){
                 for(int i=0; i<gold_count; i++){
                     if((gold_x[i] == Px) && (gold_y[i] == Py)){
+                        undo_record(TRUE,i);
                         gold_x[i] = gold_x[i] + 1;
                         if((map[gold_y[i]][gold_x[i]] == '#') ||
                            (map[gold_y[i]][gold_x[i]] == '$')){
@@ -223,7 +303,7 @@ void readMap(int level){
     int count = 0;
     slot_count = 0;
     gold_count = 0;
-    undo_count = 0;
+    undo_count = 5;
 
     // 파일을 읽어서 stage의 크기를 알아냄
     map_file = fopen("map.txt","r");
@@ -311,7 +391,6 @@ void readMap(int level){
     }
     fclose(map_file);
 }
-
 void printMap(){
     map[Py][Px] = '@'; // 플레이어의 이동이 현재 구현된 위치에 @ 출력
 
