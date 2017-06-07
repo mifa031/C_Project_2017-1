@@ -1,0 +1,100 @@
+#include<stdio.h>
+#include<windows.h>
+#define t 116
+int t_key(int key)
+{
+	int ranking;
+	key= getch();
+	switch (key)
+	{
+		case t:
+		switch(key)
+		{
+			Sleep(1000);
+			char buf[10000];
+			int i;
+			char t_buf[1000];
+			float t_sec[500];
+			char buf_sec[1000];
+					
+			case 1:
+			
+			fopen("ranking.txt","r");
+			FILE *fp=fopen("ranking.txt", "rt");
+			fgets(buf,sizeof(buf),fp);
+			printf("%s",buf);
+			while(fscanf(fp,"%s",t_buf)!="map"||fscanf(fp,"%s",t_buf)!="2");
+			{
+			fscanf(fp,"%s  %.1f%s",t_buf,t_sec,buf_sec);
+			printf("%s  %.1f%s",t_buf,t_sec,buf_sec);
+			}
+			fclose(fp);
+			break;
+
+			case 2:
+			fopen("ranking.txt","r");
+			//파일포인터 위치가 "map 2"로 가도록 추가 필요
+			fgets(buf,sizeof(buf),fp);
+			printf("%s",buf);
+			while(fscanf(fp,"%s",t_buf)!="map"||fscanf(fp,"%s",t_buf)!="3");
+			{
+			fscanf(fp,"%s  %.1f%s",t_buf,t_sec,buf_sec);
+			printf("%s  %.1f%s",t_buf,t_sec,buf_sec);
+			}
+			fclose(fp);
+			break;
+			
+			case 3:
+			fopen("ranking.txt","r");
+			//파일포인터 위치가 "map 3"로 가도록 추가 필요
+			fgets(buf,sizeof(buf),fp);
+			printf("%s",buf);
+			while(fscanf(fp,"%s",t_buf)!="map"||fscanf(fp,"%s",t_buf)!="4");
+			{
+			fscanf(fp,"%s  %.1f%s",t_buf,t_sec,buf_sec);
+			printf("%s  %.1f%s",t_buf,t_sec,buf_sec);
+			}
+			fclose(fp);
+			break;
+
+			case 4:
+			fopen("ranking.txt","r");
+			//파일포인터 위치가 "map 4"로 가도록 추가 필요
+			fgets(buf,sizeof(buf),fp);
+			printf("%s",buf);
+			while(fscanf(fp,"%s",t_buf)!="map"||fscanf(fp,"%s",t_buf)!="5");
+			{
+			fscanf(fp,"%s  %.1f%s",t_buf,t_sec,buf_sec);
+			printf("%s  %.1f%s",t_buf,t_sec,buf_sec);
+			}
+			fclose(fp);
+			break;
+
+			case 5:
+			fopen("ranking.txt","r");
+			//파일포인터 위치가 "map 5"로 가도록 추가 필요
+			fgets(buf,sizeof(buf),fp);
+			printf("%s",buf);
+			while(fscanf(fp,"%s",t_buf)!=EOF);
+			{
+			fscanf(fp,"%s  %.1f%s",t_buf,t_sec,buf_sec);
+			printf("%s  %.1f%s",t_buf,t_sec,buf_sec);
+			}
+			fclose(fp);
+			break;
+			
+			default :
+			fopen("ranking.txt","r");
+			fgets(buf,sizeof(buf),fp);
+			printf("%s",buf);
+			while(fscanf(fp,"%s",t_buf)!=EOF);
+			{
+			fgets(buf,sizeof(buf),fp);
+			printf("%s",buf);
+			}
+			fclose(fp);
+			break;
+		}
+	}
+return 0;
+}
