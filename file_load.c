@@ -1,7 +1,7 @@
 void file_load()  
 {
 
-    FILE *sokoban.txt; // 저장한 게임이 들어있는 파일
+    FILE *load; // 저장한 게임을 불러오는 파일을 지정
     char p_map[MAX_RC][MAX_RC];
     load = fopen("sokoban.txt", "r"); // 파일 오픈
     
