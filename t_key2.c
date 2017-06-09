@@ -2,7 +2,7 @@
 #include<windows.h>
 #include<string.h>
 #define MAX_STAGE 5
-void t_key(int key,int level){
+void t_key(int cmd,int level){
 	int ranking;
 	cmd=getch();
 	switch (cmd) {
