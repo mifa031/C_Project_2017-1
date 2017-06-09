@@ -53,8 +53,10 @@ void load_rank(int level);
 void save_rank(int level);
 void save_game();
 void load_game();
+
 void main(){
     char cmd;
+    int cmd_typed = FALSE;
     while(1){
         printf("input name : ");
         gets(user_name);
@@ -72,12 +74,15 @@ stage_start:
 load_point:
             gettimeofday(&start,NULL);
             while(1){
-                printMap();
+                if(!cmd_typed)
+                    printMap();
                 if(isCleared()){ // 스테이지 클리어 여부 확인
                     stage_cleared_flag[stage-1] = 1;
                     break;
                 }
-                cmd = getch();
+                if(!cmd_typed)
+                    cmd = getch();
+                cmd_typed = FALSE;
                 switch(cmd){
                     case 'h':
                     case 'j':
@@ -90,6 +95,7 @@ load_point:
                         screen_clear();
                         displayHelp();
                         cmd = getch();
+                        cmd_typed = TRUE;
                         screen_clear();
                         break;
                     case 'n': //현재까지의 시간기록 삭제 후 첫번째 맵부터 다시시작
@@ -105,6 +111,11 @@ load_point:
                         exit(0);
                         break;
                     case 't':
+                        cmd = getch();
+                        int cmd_int = cmd - 48;
+                        load_rank(cmd_int);
+                        cmd = getch();
+                        cmd_typed = TRUE;
                         break;
                     case 'r': //게임시간 유지하며 현재 맵 재시작
                         screen_clear();
@@ -132,6 +143,7 @@ load_point:
     }
     }
 }
+
 void load_game(){
     FILE* file;
     file = fopen("sokoban.txt","r");
@@ -142,7 +154,6 @@ void load_game(){
     for(int i=0; i<gold_count; i++){
         map[gold_y[i]][gold_x[i]] = ' ';
     }
-
     fscanf(file,"%s\n",&user_name);
     for(int i=0; i<MAX_STAGE; i++)
         fscanf(file,"%lf\n",&t[i]);
@@ -216,8 +227,47 @@ void save_game(){
     screen_clear();
     fclose(file);
 }
-
 void load_rank(int level){ // stage 0은 전체 순위
+    FILE* file;
+    char temp_rank[50][50]; // 랭킹 파일 데이터를 임시로 저장할 변수
+    char name[MAX_STAGE*5][10];
+    float time[MAX_STAGE*5];
+    char temp_char[4];
+
+    if((file = fopen("ranking.txt","r")) == NULL){
+        screen_clear();
+        printf("저장된 랭킹 데이터가 없습니다.\n");
+        sleep(3);
+    }else if(level == 0){
+        int i = 0;
+        while(!feof(file)){
+            fgets(temp_rank[i],sizeof(temp_rank[i]),file);
+            i++;
+        }
+        screen_clear();
+        for(int a=0; a<i; a++)
+            printf("%s",temp_rank[a]);
+    }else{
+        int i = 0;
+        char map_level = level+48;
+        while(!feof(file)){
+            fgets(temp_rank[i],sizeof(temp_rank[i]),file);
+            if(temp_rank[i][4] == map_level && temp_rank[i][5] == '\n'){
+                int j = 0;
+                while(!feof(file)){
+                    fscanf(file,"%s %f%s\n",&name[j],&time[j],&temp_char);
+                    j++;
+                    i++;
+                    if(strcmp(temp_char,"sec") != 0){
+                        break;
+                    }
+                }
+                break;
+            }
+            i++;
+
+        }
+    }
 }
 void save_rank(int level){
     FILE* file;
@@ -229,7 +279,6 @@ void save_rank(int level){
     char map_exp[6] = "map  \n";
     map_exp[3] = ' ';
     map_exp[4] = ch_level;
-    char current_map[6];
     char temp_char[4];
     int user_num = 0;
 
@@ -272,7 +321,6 @@ void save_rank(int level){
         fgets(temp_rank[i],sizeof(temp_rank[i]),file);
 
         if(temp_rank[i][4] == map_exp[4] && temp_rank[i][5] == '\n'){
-            strcpy(current_map,temp_rank[i]);
             int j = 0;
 
             while(!feof(file)){
@@ -314,6 +362,7 @@ void save_rank(int level){
         user_num = 5; // 최대 5명까지만 보기위한 세팅
 
     fclose(file);
+
     // 바뀐 랭킹 데이터를 다시 쓴다. (ranking2에 임시저장)
     file = fopen("ranking.txt","r");
     file2 = fopen("ranking2.txt","w");
@@ -334,7 +383,6 @@ void save_rank(int level){
             fputs(temp_rank[i],file2);
             i++;
     }
-
     for(int i=0; i<50; i++){
         for(int j=0; j<50; j++){
             temp_rank[i][j] = '\0';
@@ -374,6 +422,9 @@ void save_rank(int level){
     }
     fclose(file);
     fclose(file2);
+
+
+
     //ranking2의 내용을 ranking파일로 복사한뒤 ranking2 삭제하고 종료
     file = fopen("ranking.txt","w");
     file2 = fopen("ranking2.txt","r");
@@ -388,7 +439,6 @@ void save_rank(int level){
     fclose(file2);
     remove("ranking2.txt");
 }
-
 void undo_record(int is_gold_moved, int current_gold_index){
     // 1번째 undo 기록
     if(input_index < undo_count && !is_gold_moved){
@@ -684,7 +734,6 @@ void printMap(){
     }
     printf("\n");
 }
-
 int getch(void){
     int ch;
     struct termios buf;
