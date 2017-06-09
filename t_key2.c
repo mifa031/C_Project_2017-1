@@ -1,16 +1,15 @@
 #include<stdio.h>
 #include<windows.h>
 #include<string.h>
-#define t 116
 #define MAX_STAGE 5
 void t_key(int key,int level){
 	int ranking;
-	key=getch();
-	switch (key) {
+	cmd=getch();
+	switch (cmd) {
 		
-		case t:
+		case 't':
 		
-		switch(key)
+		switch(cmd)
 		{
 			Sleep(1000);
 			char buf[10000];
@@ -20,7 +19,7 @@ void t_key(int key,int level){
 			char buf_sec[1000];
 			FILE* file = fopen("ranking.txt","r");
 
-			case 1 :
+			case '1' :
 			
 			level="1";
 			load_rank(level);
@@ -29,7 +28,7 @@ void t_key(int key,int level){
 			break;
 
 
-			case 2 :
+			case '2' :
 			
 			level="2";
 			load_rank(level);
@@ -38,7 +37,7 @@ void t_key(int key,int level){
 			break;
 
 
-			case 3 :
+			case '3' :
 			
 			level="3";
 			load_rank(level);
@@ -47,7 +46,7 @@ void t_key(int key,int level){
 			break;
 
 
-			case 4 :
+			case '4' :
 			
 			level="4";
 			load_rank(level);
@@ -56,7 +55,7 @@ void t_key(int key,int level){
 			break;
 
 
-			case 5 :
+			case '5' :
 			
 			level="5";
 			load_rank(level);
@@ -138,6 +137,8 @@ void load_rank(int level){
      }
 	 fclose(file);
 }
+
+
 
 
 
