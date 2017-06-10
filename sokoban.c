@@ -86,7 +86,7 @@ load_point:
             gettimeofday(&start,NULL);
             cmd = ' ';
             while(1){
-                if(cmd == ' ' || cmd == 'h' || cmd == 'j' || cmd == 'k' || cmd == 'l'){
+                if(cmd == ' ' || cmd == 'h' || cmd == 'j' || cmd == 'k' || cmd == 'l' || cmd =='r' || cmd=='u'||cmd=='s'){
                     screen_clear();
                     printMap();
                     if(cmd == 'r' || cmd == 'u' || cmd == 's'){
@@ -112,6 +112,7 @@ load_point:
                     gets(cmd_s);
                     cmd = cmd_s[0];
                 }
+
                 if(isCleared()){ // 스테이지 클리어 여부 확인
                     stage_cleared_flag[stage-1] = 1;
                     break;
@@ -140,6 +141,9 @@ load_point:
                         system("clear");
                         printf("\n\n\n\nS E E   Y O U   %s . . . .\n\n\n\n",user_name);
                         printf("(Command) e\n");
+                        gettimeofday(&end,NULL);
+                        t[stage-1] += time_diff(&end, &start);
+                        save_game();
                         exit(0);
                         break;
                     case 't':
@@ -198,7 +202,7 @@ load_point:
                         break;
                     case 's':
                         gettimeofday(&end,NULL);
-                        t[stage-1] = time_diff(&end, &start);
+                        t[stage-1] += time_diff(&end, &start);
                         save_game();
                         break;
                     case 'f':
