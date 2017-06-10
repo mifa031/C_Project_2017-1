@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include<unistd.h>
-#include<sys/time.h>
+#include <unistd.h>
+#include <sys/time.h>
 #include <termio.h>
 #include <string.h>
 
@@ -86,20 +86,27 @@ load_point:
             gettimeofday(&start,NULL);
             cmd = ' ';
             while(1){
-                if(cmd == ' ' || cmd == '\n' || cmd == 'h' || cmd == 'j' || cmd == 'k' || cmd == 'l'){
+                if(cmd == ' ' || cmd == 'h' || cmd == 'j' || cmd == 'k' || cmd == 'l'){
+                    screen_clear();
                     printMap();
-                    printf("\n(Command) ");
+                    if(cmd == 'r' || cmd == 'u' || cmd == 's'){
+                        printf("\n(Command) %c",cmd);
+                    }else{
+                        printf("\n(Command) ");
+                    }
                     cmd = getch();
-                        if(cmd == 'h' || cmd == 'j' || cmd == 'k' || cmd == 'l'){
-
-                        }else{
-                            cmd_s[0] = cmd;
-                            printf("%c",cmd);
-                            gets(cmd_t);
-                            cmd_s[1] = cmd_t[0];
-                            cmd_s[2] = cmd_t[1];
-                            cmd = cmd_s[0];
-                        }
+                    if(cmd == 't'){
+                        system("clear");
+                        screen_clear();
+                        printMap();
+                        printf("\n(Command) %c",cmd);
+                        cmd_s[0] = cmd;
+                        gets(cmd_t);
+                        cmd_s[1] = cmd_t[0];
+                        cmd_s[2] = cmd_t[1];
+                        cmd_s[3] = cmd_t[2];
+                        cmd = cmd_s[0];
+                    }
                 }else{
                     printf("\n(Command) ");
                     gets(cmd_s);
@@ -118,20 +125,18 @@ load_point:
                     case 'k':
                     case 'l': //방향 이동 구현
                         move(cmd);
-                        screen_clear();
                         break;
                     case 'd': //dispaly help
                         screen_clear();
                         displayHelp();
                         break;
                     case 'n': //현재까지의 시간기록 삭제 후 첫번째 맵부터 다시시작
-                        screen_clear();
+                        system("clear");
                         for(int i=0; i<stage; i++)
                             t[i] = 0;
                         stage = 1;
                         goto stage_start;
                     case 'e': //현재 상태 파일에 저장하고 종료
-                        printf("%d\n",t[stage-1]);
                         system("clear");
                         printf("\n\n\n\nS E E   Y O U   %s . . . .\n\n\n\n",user_name);
                         printf("(Command) e\n");
@@ -139,6 +144,7 @@ load_point:
                         break;
                     case 't':
                         screen_clear();
+                        cmd_int = 0;
                         if(cmd_s[1]-48 > 0 && cmd_s[1]-48 < 6){
                             switch(cmd_s[1]){
                                 case '1':
@@ -180,27 +186,20 @@ load_point:
                                     cmd_int = 0;
 
                         }
-                        }else{
-                            cmd_int = 0;
                         }
-
                         load_rank(cmd_int);
                         break;
                     case 'r': //게임시간 유지하며 현재 맵 재시작
                         screen_clear();
                         readMap(stage);
-                        printMap();
                         break;
                     case 'u':
                         undo();
-                        screen_clear();
-                        printMap();
                         break;
                     case 's':
                         gettimeofday(&end,NULL);
                         t[stage-1] = time_diff(&end, &start);
                         save_game();
-                        printMap();
                         break;
                     case 'f':
                         load_game();
@@ -518,8 +517,6 @@ void save_rank(int level){
             break;
         }
     }
-
-
     for(int i=0; i<50; i++){
         for(int j=0; j<50; j++){
             temp_rank[i][j] = '\0';
@@ -590,7 +587,6 @@ void undo_record(int is_gold_moved, int current_gold_index){
     if(input_index < undo_count)
         input_index++;
 }
-
 void undo(){
     if((undo_count > 0) && (undo_point >= 0)){      // undo_count가 남아 있다면
         map[Py][Px] = ' ';
@@ -630,7 +626,7 @@ int isCleared(){
 }
 
 void move(char dir){
-    if(dir == ' ' || dir == '\n'){
+    if(dir == ' '){
     }else{
     undo_record(FALSE,FALSE);
     map[Py][Px] = ' '; // 다음 이동을 위해 현재 @를 화면에서 지움
