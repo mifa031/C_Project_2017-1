@@ -22,7 +22,7 @@ int Px,Py;                // 플레이어 위치
 int stage = 1;             // 현재 스테이지
 
 int undo_point = -1;        //플레이 상태를 담은 undo배열들 중 꺼내올 index위치
-int input_index = 0;       // undo배열들 중 데이터를 담을 index
+int input_index = 0;       // undo배열들에 데이터를 담을 index
 int undo_Px[5] = {0};
 int undo_Py[5] = {0};       // undo를 위한 플레이어 위치 저장
 int undo_gold_x[5] = {-1};
@@ -47,22 +47,18 @@ void screen_clear();     // 화면을 지우고 플레이어명 띄우는 함수
 void move(char dir);     // 플레이어 이동 구현 함수
 int isCleared();         // 스테이지 클리어했으면 TRUE, 못했으면 FALSE 리턴
 double time_diff(struct timeval *end, struct timeval *start); // 끝-시작 시간차 리턴
-void undo();
-void undo_record(int iS_gold_moved, int current_gold_index);
-void load_rank(int level);
-void save_rank(int level);
-void save_game();
-void load_game();
+void undo();             // 플레이어 이동 undo
+void undo_record(int iS_gold_moved, int current_gold_index); // undo하기전에 필요한 위치정보 기록
+void load_rank(int level); // 레벨에 따라 랭킹 로드
+void save_rank(int level); // 레벨에 따라 랭킹 저장
+void save_game();          // 게임 저장
+void load_game();          // 게임 로드
 
 void main(){
-    char cmd;
-    char cmd_s[4];
-    char cmd_t[4];
-    for(int i=0; i<4; i++){
-        cmd_s[i] = '\0';
-        cmd_t[i] = '\0';
-    }
-    int cmd_int = 0;
+    char cmd;       // getch()로 문자 1개를 받아올때 쓰는 변수
+    char cmd_s[4];  // gets()로 문자열 받아올때 쓰는 변수
+    char cmd_t[4];  // gets()로 문자열 받아올때 임시로 쓰는 변수
+    int cmd_int = 0;  // t명령에서 숫자값 저장할때 쓰는 변수
     while(1){
         printf("input name : ");
         gets(user_name);
@@ -73,20 +69,22 @@ void main(){
                 if(stage_cleared_flag[stage-1] == 1){
                     stage++;
                 }
-                if(stage > MAX_STAGE){
-                    system("clear");
+                if(stage > MAX_STAGE){ // 마지막 스테이지까지 클리어했다면,
+                    system("clear");   // 축하메시지 출력 후 종료
                     printf("\nCongratulations!!!\nAll STAGE CLEARED !!!\n");
+                    sleep(10);
                     exit(0);
                 }
             }
 stage_start:
             screen_clear();
-            readMap(stage);
+            readMap(stage); // stage에 맞게 맵을 읽어온다.
 load_point:
-            gettimeofday(&start,NULL);
+            gettimeofday(&start,NULL);  // 시간 측정 시작
             cmd = ' ';
             while(1){
                 if(cmd == ' ' || cmd == 'h' || cmd == 'j' || cmd == 'k' || cmd == 'l' || cmd =='r' || cmd=='u'||cmd=='s'){
+                    // 화면에 맵이 출력되어 있을때의 명령입력부분
                     screen_clear();
                     printMap();
                     if(cmd == 'r' || cmd == 'u' || cmd == 's'){
@@ -96,7 +94,6 @@ load_point:
                     }
                     cmd = getch();
                     if(cmd == 't'){
-                        system("clear");
                         screen_clear();
                         printMap();
                         printf("\n(Command) %c",cmd);
@@ -107,7 +104,7 @@ load_point:
                         cmd_s[3] = cmd_t[2];
                         cmd = cmd_s[0];
                     }
-                }else{
+                }else{ // 화면에 맵이 출력되지 않은 경우 명령입력부분
                     printf("\n(Command) ");
                     gets(cmd_s);
                     cmd = cmd_s[0];
@@ -115,7 +112,7 @@ load_point:
 
                 if(isCleared()){ // 스테이지 클리어 여부 확인
                     stage_cleared_flag[stage-1] = 1;
-                    break;
+                    break;   //클리어 시 flag를 1로 set하고 break
                 }
 
                 switch(cmd){
@@ -144,9 +141,10 @@ load_point:
                         gettimeofday(&end,NULL);
                         t[stage-1] += time_diff(&end, &start);
                         save_game();
+                        sleep(3);
                         exit(0);
                         break;
-                    case 't':
+                    case 't': // 맵별 순위 출력
                         screen_clear();
                         cmd_int = 0;
                         if(cmd_s[1]-48 > 0 && cmd_s[1]-48 < 6){
@@ -197,22 +195,24 @@ load_point:
                         screen_clear();
                         readMap(stage);
                         break;
-                    case 'u':
+                    case 'u': // 사용자 이동 undo
                         undo();
                         break;
-                    case 's':
+                    case 's': // 게임 저장
                         gettimeofday(&end,NULL);
                         t[stage-1] += time_diff(&end, &start);
                         save_game();
                         break;
-                    case 'f':
+                    case 'f': // 게임 로드
                         load_game();
                         goto load_point;
                 }
             }
+            // stage 클리어 시 처음 진입하는 부분
                     gettimeofday(&end,NULL);
                     t[stage-1] += time_diff(&end, &start);
                     save_rank(stage);
+                    //걸린 시간을 저장하고, 랭킹 기록
         }
     }
 }
@@ -228,6 +228,7 @@ void load_game(){
         map[gold_y[i]][gold_x[i]] = ' ';
     }
 
+    //파일에 저장된 전역변수들 로드
     fscanf(file,"%s\n",&user_name);
     for(int i=0; i<MAX_STAGE; i++)
         fscanf(file,"%lf\n",&t[i]);
@@ -259,7 +260,6 @@ void load_game(){
     for(int i=0; i<MAX_STAGE; i++)
         fscanf(file,"%d\n",&stage_cleared_flag[i]);
 
-    screen_clear();
     fclose(file);
 }
 
@@ -267,6 +267,7 @@ void save_game(){
     FILE* file;
     file = fopen("sokoban.txt","w");
 
+    // 게임 save에 필요한 전역변수들을 파일에 저장
     fprintf(file,"%d\n",stage);
     fprintf(file,"%s\n",user_name);
     for(int i=0; i<MAX_STAGE; i++)
@@ -299,19 +300,18 @@ void save_game(){
     for(int i=0; i<MAX_STAGE; i++)
         fprintf(file,"%d\n",stage_cleared_flag[i]);
 
-    screen_clear();
     fclose(file);
 }
 
-void load_rank(int level){ // stage 0은 전체 순위
+void load_rank(int level){ // level 0은 전체 순위, 1~5는 맵별 순위 출력
     FILE* file;
-    char temp_rank[50][50]; // 랭킹 파일 데이터를 임시로 저장할 변수
+    char temp_rank[50][50];
     char name[5][10];
     float time[5];
     char current_map[6];
     int user_num = 0;
-    char temp_str[50];
-    int is_no_user_map[50];
+    char temp_str[50];     // 파일내 데이터들을 임시로 저장하는 변수들
+    int is_no_user_map[50]; // 랭킹 기록자가 없는 map은 skip하는데 사용
 
     for(int i=0; i<50; i++){
         is_no_user_map[i] = -1;
@@ -322,7 +322,7 @@ void load_rank(int level){ // stage 0은 전체 순위
         screen_clear();
         printf("저장된 랭킹 데이터가 없습니다.\n");
         sleep(3);
-    }else if(level == 0){
+    }else if(level == 0){ // 전체 맵 랭킹 출력
         int i = 0;
         while(!feof(file)){
             fgets(temp_rank[i],sizeof(temp_rank[i]),file);
@@ -348,7 +348,7 @@ void load_rank(int level){ // stage 0은 전체 순위
             if(is_no_user_map[a] < 0)
                 printf("%s",temp_rank[a]);
         }
-    }else if(level > 0 && level < 6){
+    }else if(level > 0 && level < 6){ // 맵별 랭킹 출력
         int i = 0;
         int map_level = level+48;
         char temp_char2[3];
@@ -380,7 +380,7 @@ void load_rank(int level){ // stage 0은 전체 순위
 void save_rank(int level){
     FILE* file;
     FILE* file2;
-    char temp_rank[50][50]; // 랭킹 파일 데이터를 임시로 저장할 변수
+    char temp_rank[50][50];
     char name[6][10];
     float time[6];
     char ch_level = level + 48;
@@ -388,7 +388,7 @@ void save_rank(int level){
     map_exp[3] = ' ';
     map_exp[4] = ch_level;
     char temp_char[4];
-    int user_num = 0;
+    int user_num = 0; // 랭킹파일 데이터를 임시로 저장하는 변수들
 
     if((file = fopen("ranking.txt","r+")) == NULL){
         file = fopen("ranking.txt","a+");
@@ -397,8 +397,8 @@ void save_rank(int level){
     char tmp_str[50];
     int map_exp_check[MAX_STAGE] = {0};
     char tmp_map_exp[6] = "map  \n";
-    while(!feof(file)){ // map 1 같은 맵 표시가 있는지 체크, 없으면 0
-        fgets(tmp_str,sizeof(tmp_str),file);
+    while(!feof(file)){ // 'map 1' 같은 맵 표시가 있는지 체크, 없으면 0
+        fgets(tmp_str,sizeof(tmp_str),file); //(추후 맵표시를 참고하여 랭킹저장)
         for(int a=0; a<MAX_STAGE; a++){
             tmp_map_exp[4] = a+49;
             if(strcmp(tmp_str,tmp_map_exp) == 0){
@@ -521,6 +521,7 @@ void save_rank(int level){
             break;
         }
     }
+
     for(int i=0; i<50; i++){
         for(int j=0; j<50; j++){
             temp_rank[i][j] = '\0';
@@ -547,7 +548,7 @@ void save_rank(int level){
 }
 
 void undo_record(int is_gold_moved, int current_gold_index){
-    // 1번째 undo 기록
+    // 1번째 undo 기록 (사용자만 움직였을 경우 1번째 undo만 기록)
     if(input_index < undo_count && !is_gold_moved){
         undo_Px[input_index] = Px;
         undo_Py[input_index] = Py;
@@ -591,6 +592,7 @@ void undo_record(int is_gold_moved, int current_gold_index){
     if(input_index < undo_count)
         input_index++;
 }
+
 void undo(){
     if((undo_count > 0) && (undo_point >= 0)){      // undo_count가 남아 있다면
         map[Py][Px] = ' ';
@@ -637,9 +639,9 @@ void move(char dir){
     switch(dir){
         case 'h':
             Px = Px - 1; // @ 이동 구현
-            if(map[Py][Px] == '#') //벽을 만나면 이동 취소
+            if(map[Py][Px] == '#') //벽을 만나면 @ 이동 취소
                 Px = Px + 1;
-            if(map[Py][Px] == '$'){ //이동한 곳에 $가 있다면
+            if(map[Py][Px] == '$'){ //@가 이동한 곳에 $가 있다면
                 for(int i=0; i<gold_count; i++){
                     if((gold_x[i] == Px) && (gold_y[i] == Py)){ // 해당 $의 index를 찾아내서
                         undo_record(TRUE,i);
@@ -794,7 +796,7 @@ void readMap(int level){
                 map[i][j] = fgetc(map_file);
                 map_level++;
             }
-            if(map_level != level){
+            if(map_level != level){ // 현재 level에 맞는 map인지 확인
                 i=0; j=-1;
                 slot_count = 0;
                 gold_count = 0;
@@ -804,7 +806,7 @@ void readMap(int level){
                 map[i][j] = fgetc(map_file);
             if(map[i][i] == 'p')
                 map[i][j] = fgetc(map_file);
-            if(map[i][j] == '\n' && count ==0){ //상단에 map글자 안읽어오도록
+            if(map[i][j] == '\n' && count ==0){ // 상단에 map표시 안읽어오도록
                 count++;
                 map[i][j] = fgetc(map_file);
             }
@@ -817,7 +819,7 @@ void readMap(int level){
             }
         }
     }
-    if(gold_count != slot_count){
+    if(gold_count != slot_count){ // gold와 slot 개수가 안맞으면 종료
         printf("$와 0의 개수가 같지않아 종료합니다.\n");
         exit(1);
     }
@@ -846,7 +848,7 @@ void printMap(){
     printf("\n");
 }
 
-int getch(void){
+int getch(){ // 키보드로 입력받은 문자를 화면에 출력하지않고 리턴
     int ch;
     struct termios buf;
     struct termios save;
