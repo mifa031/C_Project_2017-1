@@ -116,6 +116,7 @@ load_point:
                         load_rank(cmd_int);
                         cmd = getch();
                         cmd_typed = TRUE;
+                        screen_clear();
                         break;
                     case 'r': //게임시간 유지하며 현재 맵 재시작
                         screen_clear();
@@ -154,6 +155,7 @@ void load_game(){
     for(int i=0; i<gold_count; i++){
         map[gold_y[i]][gold_x[i]] = ' ';
     }
+
     fscanf(file,"%s\n",&user_name);
     for(int i=0; i<MAX_STAGE; i++)
         fscanf(file,"%lf\n",&t[i]);
@@ -188,6 +190,7 @@ void load_game(){
     screen_clear();
     fclose(file);
 }
+
 void save_game(){
     FILE* file;
     file = fopen("sokoban.txt","w");
@@ -227,13 +230,22 @@ void save_game(){
     screen_clear();
     fclose(file);
 }
+
 void load_rank(int level){ // stage 0은 전체 순위
     FILE* file;
     char temp_rank[50][50]; // 랭킹 파일 데이터를 임시로 저장할 변수
-    char name[MAX_STAGE*5][10];
-    float time[MAX_STAGE*5];
-    char temp_char[4];
+    char name[5][10];
+    float time[5];
+    char current_map[6];
+    int user_num = 0;
+    char temp_str[50];
+    int is_no_user_map[50];
 
+    for(int i=0; i<50; i++){
+        is_no_user_map[i] = -1;
+    }
+
+    char* temp_char;
     if((file = fopen("ranking.txt","r")) == NULL){
         screen_clear();
         printf("저장된 랭킹 데이터가 없습니다.\n");
@@ -242,20 +254,39 @@ void load_rank(int level){ // stage 0은 전체 순위
         int i = 0;
         while(!feof(file)){
             fgets(temp_rank[i],sizeof(temp_rank[i]),file);
+            if(feof(file))
+                break;
+            for(char ascii=49; ascii<=53; ascii++){
+                if((temp_rank[i][4] == ascii) && (temp_rank[i][5] == '\n')){
+                    i++;
+                    temp_char = fgets(temp_rank[i],sizeof(temp_rank[i]),file);
+                    if(((temp_rank[i][4] == (ascii+1)) && (temp_rank[i][5] == '\n')||
+                                temp_char == NULL)){
+                        is_no_user_map[i-1] = 1;
+                        break;
+                    }else{
+                        break;
+                    }
+                }
+            }
             i++;
         }
         screen_clear();
-        for(int a=0; a<i; a++)
-            printf("%s",temp_rank[a]);
+        for(int a=0; a<i; a++){
+            if(is_no_user_map[a] < 0)
+                printf("%s",temp_rank[a]);
+        }
     }else{
         int i = 0;
         char map_level = level+48;
         while(!feof(file)){
             fgets(temp_rank[i],sizeof(temp_rank[i]),file);
             if(temp_rank[i][4] == map_level && temp_rank[i][5] == '\n'){
+                strcpy(current_map,temp_rank[i]);
                 int j = 0;
                 while(!feof(file)){
                     fscanf(file,"%s %f%s\n",&name[j],&time[j],&temp_char);
+                    user_num++;
                     j++;
                     i++;
                     if(strcmp(temp_char,"sec") != 0){
@@ -267,8 +298,12 @@ void load_rank(int level){ // stage 0은 전체 순위
             i++;
 
         }
+        printf("%s",current_map);
+        for(int a=0; a<user_num-1; a++)
+            printf("%s %.1fsec\n",name[a],time[a]);
     }
 }
+
 void save_rank(int level){
     FILE* file;
     FILE* file2;
@@ -362,7 +397,6 @@ void save_rank(int level){
         user_num = 5; // 최대 5명까지만 보기위한 세팅
 
     fclose(file);
-
     // 바뀐 랭킹 데이터를 다시 쓴다. (ranking2에 임시저장)
     file = fopen("ranking.txt","r");
     file2 = fopen("ranking2.txt","w");
@@ -383,6 +417,7 @@ void save_rank(int level){
             fputs(temp_rank[i],file2);
             i++;
     }
+
     for(int i=0; i<50; i++){
         for(int j=0; j<50; j++){
             temp_rank[i][j] = '\0';
@@ -414,7 +449,6 @@ void save_rank(int level){
             break;
         }
     }
-
     for(int i=0; i<50; i++){
         for(int j=0; j<50; j++){
             temp_rank[i][j] = '\0';
@@ -439,6 +473,7 @@ void save_rank(int level){
     fclose(file2);
     remove("ranking2.txt");
 }
+
 void undo_record(int is_gold_moved, int current_gold_index){
     // 1번째 undo 기록
     if(input_index < undo_count && !is_gold_moved){
@@ -484,6 +519,7 @@ void undo_record(int is_gold_moved, int current_gold_index){
     if(input_index < undo_count)
         input_index++;
 }
+
 void undo(){
     if((undo_count > 0) && (undo_point >= 0)){      // undo_count가 남아 있다면
         map[Py][Px] = ' ';
@@ -521,6 +557,7 @@ int isCleared(){
         return TRUE;
     return FALSE;
 }
+
 void move(char dir){
     undo_record(FALSE,FALSE);
     map[Py][Px] = ' '; // 다음 이동을 위해 현재 @를 화면에서 지움
@@ -615,6 +652,7 @@ void displayHelp(){
     printf("d(display help)\n");
     printf("t(top)\n");
 }
+
 void readMap(int level){
     FILE* map_file;
     int map_level = 0;
@@ -677,8 +715,6 @@ void readMap(int level){
                 gold_y[gold_count] = i;
                 gold_count++;
             }
-
-
             if(map[i][j] == 'm'){
                 map[i][j] = fgetc(map_file);
                 map_level++;
@@ -734,6 +770,7 @@ void printMap(){
     }
     printf("\n");
 }
+
 int getch(void){
     int ch;
     struct termios buf;
