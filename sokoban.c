@@ -67,6 +67,11 @@ void main(){
                 if(stage_cleared_flag[stage-1] == 1){
                     stage++;
                 }
+                if(stage > MAX_STAGE){
+                    system("clear");
+                    printf("\nCongratulations!!!\nAll STAGE CLEARED !!!\n");
+                    exit(0);
+                }
             }
 stage_start:
             screen_clear();
@@ -303,7 +308,6 @@ void load_rank(int level){ // stage 0은 전체 순위
             printf("%s %.1fsec\n",name[a],time[a]);
     }
 }
-
 void save_rank(int level){
     FILE* file;
     FILE* file2;
@@ -449,6 +453,7 @@ void save_rank(int level){
             break;
         }
     }
+
     for(int i=0; i<50; i++){
         for(int j=0; j<50; j++){
             temp_rank[i][j] = '\0';
@@ -519,7 +524,6 @@ void undo_record(int is_gold_moved, int current_gold_index){
     if(input_index < undo_count)
         input_index++;
 }
-
 void undo(){
     if((undo_count > 0) && (undo_point >= 0)){      // undo_count가 남아 있다면
         map[Py][Px] = ' ';
@@ -548,7 +552,7 @@ int isCleared(){
 
     for(int i=0; i<slot_count; i++){
         for(int j=0; j<gold_count; j++){
-            if(slot_x[i] == gold_x[j] || slot_y[i] == gold_y[j])
+            if(slot_x[i] == gold_x[j] && slot_y[i] == gold_y[j])
                 matched_count++;  // slot과 gold 위치가 같다면 matched_count 증가
         }
     }
@@ -557,7 +561,6 @@ int isCleared(){
         return TRUE;
     return FALSE;
 }
-
 void move(char dir){
     undo_record(FALSE,FALSE);
     map[Py][Px] = ' '; // 다음 이동을 위해 현재 @를 화면에서 지움
@@ -715,6 +718,7 @@ void readMap(int level){
                 gold_y[gold_count] = i;
                 gold_count++;
             }
+
             if(map[i][j] == 'm'){
                 map[i][j] = fgetc(map_file);
                 map_level++;
