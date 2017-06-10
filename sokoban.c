@@ -81,13 +81,14 @@ stage_start:
             readMap(stage); // stage에 맞게 맵을 읽어온다.
 load_point:
             gettimeofday(&start,NULL);  // 시간 측정 시작
-            cmd = ' ';
+            if(cmd != 'f')
+                cmd = ' ';
             while(1){
-                if(cmd == ' ' || cmd == 'h' || cmd == 'j' || cmd == 'k' || cmd == 'l' || cmd =='r' || cmd=='u'||cmd=='s'){
+                if(cmd == ' ' || cmd == 'h' || cmd == 'j' || cmd == 'k' || cmd == 'l' || cmd =='r' || cmd=='u'||cmd=='s'||cmd=='f'){
                     // 화면에 맵이 출력되어 있을때의 명령입력부분
                     screen_clear();
                     printMap();
-                    if(cmd == 'r' || cmd == 'u' || cmd == 's'){
+                    if(cmd == 'r' || cmd == 'u' || cmd == 's'||cmd == 'f'){
                         printf("\n(Command) %c",cmd);
                     }else{
                         printf("\n(Command) ");
@@ -190,6 +191,9 @@ load_point:
                         }
                         }
                         load_rank(cmd_int);
+                        cmd_int = 0;
+                        for(int i=0; i<4; i++)
+                            cmd_s[i] = '\0';
                         break;
                     case 'r': //게임시간 유지하며 현재 맵 재시작
                         screen_clear();
@@ -335,6 +339,7 @@ void load_rank(int level){ // level 0은 전체 순위, 1~5는 맵별 순위 출력
                     if(((temp_rank[i][4] == (ascii+1)) && (temp_rank[i][5] == '\n')||
                                 temp_char == NULL)){
                         is_no_user_map[i-1] = 1;
+                        is_no_user_map[i] = 1;
                         break;
                     }else{
                         break;
@@ -376,7 +381,6 @@ void load_rank(int level){ // level 0은 전체 순위, 1~5는 맵별 순위 출력
             printf("%s %.1fsec\n",name[a],time[a]);
     }
 }
-
 void save_rank(int level){
     FILE* file;
     FILE* file2;
@@ -469,6 +473,7 @@ void save_rank(int level){
         user_num = 5; // 최대 5명까지만 보기위한 세팅
 
     fclose(file);
+
     // 바뀐 랭킹 데이터를 다시 쓴다. (ranking2에 임시저장)
     file = fopen("ranking.txt","r");
     file2 = fopen("ranking2.txt","w");
@@ -848,7 +853,7 @@ void printMap(){
     printf("\n");
 }
 
-int getch(){ // 키보드로 입력받은 문자를 화면에 출력하지않고 리턴
+int getch(){ // 키보드로 입력받은 변수를 화면에 출력하지않고 리턴
     int ch;
     struct termios buf;
     struct termios save;
