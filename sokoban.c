@@ -741,7 +741,7 @@ void readMap(int level){
     int temp_col = 0;
     char temp_char = 0;
     char temp_char2 = 0;
-    int count = 0;
+    int entry_count = 0;
 
     slot_count = 0;
     gold_count = 0;
@@ -776,7 +776,7 @@ void readMap(int level){
         }
     }
 
-    map_rows = row-1;
+    map_rows = row;
     map_cols = col;
     fclose(map_file);
 
@@ -788,7 +788,7 @@ void readMap(int level){
 
     map_file = fopen("map.txt","r");
     map_level = 0;
-    count = 0;
+    entry_count = 0;
     for(int i=0; i<map_rows; i++){
         for(int j=0; j<map_cols; j++){
             map[i][j] = fgetc(map_file);
@@ -824,15 +824,16 @@ void readMap(int level){
                 i=0; j=-1;
                 slot_count = 0;
                 gold_count = 0;
+                entry_count = 0;
                 continue;
             }
             if(map[i][j] == 'a')
                 map[i][j] = fgetc(map_file);
             if(map[i][i] == 'p')
                 map[i][j] = fgetc(map_file);
-            if(map[i][j] == '\n' && count ==0){ // 상단에 map표시 안읽어오도록
-                count++;
-                map[i][j] = fgetc(map_file);
+            if(map[i][j] == '\n' && entry_count ==0){ // 상단에 map표시 안읽어오도록
+                entry_count++;
+                //map[i][j] = fgetc(map_file);
             }
 
 
