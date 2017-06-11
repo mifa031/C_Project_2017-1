@@ -388,7 +388,7 @@ void save_rank(int level){
     char name[6][10];
     float time[6];
     char ch_level = level + 48;
-    char map_exp[6] = "map  \n";
+    char map_exp[7] = "map  \n";
     map_exp[3] = ' ';
     map_exp[4] = ch_level;
     char temp_char[4];
@@ -400,7 +400,7 @@ void save_rank(int level){
 
     char tmp_str[50];
     int map_exp_check[MAX_STAGE] = {0};
-    char tmp_map_exp[6] = "map  \n";
+    char tmp_map_exp[7] = "map  \n";
     while(!feof(file)){ // 'map 1' 같은 맵 표시가 있는지 체크, 없으면 0
         fgets(tmp_str,sizeof(tmp_str),file); //(추후 맵표시를 참고하여 랭킹저장)
         for(int a=0; a<MAX_STAGE; a++){
@@ -735,11 +735,12 @@ void displayHelp(){
 }
 
 void readMap(int level){
-    FILE* map_file;
+    FILE* map_file = NULL;
     int map_level = 0;
     int row=0, col=0;
-    int temp_col;
-    char temp_char;
+    int temp_col = 0;
+    char temp_char = 0;
+    char temp_char2 = 0;
     int count = 0;
 
     slot_count = 0;
@@ -757,7 +758,16 @@ void readMap(int level){
 
         temp_col++;
 
-        if(temp_char == '\n'){
+        if(temp_char == 0x0D){
+            temp_char = fgetc(map_file);
+            temp_col++;
+            row++;
+            if(temp_col > col){
+                col = temp_col;
+            }
+            temp_col=0;
+        }
+        else if(temp_char == 0x0A){
             row++;
             if(temp_col > col){
                 col = temp_col;
@@ -782,6 +792,15 @@ void readMap(int level){
     for(int i=0; i<map_rows; i++){
         for(int j=0; j<map_cols; j++){
             map[i][j] = fgetc(map_file);
+
+            if(map[i][j] == 0x0D){ //윈도우환경 개행(\r\n)에 대비한 루틴
+                continue;
+            }
+            if(map[i][j] == 0x0A && map[i][j-1] == 0x0D ){
+                map[i][j-1] = ' ';
+                map[i][j] = 0x0A;
+            }
+
             if(map[i][j] == '@'){ // 초기 플레이어 위치 세팅
                 Px = j;
                 Py = i;
@@ -815,11 +834,13 @@ void readMap(int level){
                 count++;
                 map[i][j] = fgetc(map_file);
             }
-            if(map[i][j] == '\n'){
+
+
+            if(map[i][j] == '\n'){  // map배열에 적절한 공백 및 개행처리
                 for(; j<map_cols-1; j++)
                     map[i][j] = ' ';
 
-                if(map[i][j] == ' ' || map[i][j] == '\n')
+                if(map[i][j] == ' ')
                     map[i][j] = '\n';
             }
         }
