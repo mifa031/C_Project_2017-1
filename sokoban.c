@@ -84,6 +84,11 @@ load_point:
             if(cmd != 'f')
                 cmd = ' ';
             while(1){
+                if(isCleared()){ // 스테이지 클리어 여부 확인
+                    stage_cleared_flag[stage-1] = 1;
+                    break;   //클리어 시 flag를 1로 set하고 break
+                }
+
                 if(cmd == ' ' || cmd == 'h' || cmd == 'j' || cmd == 'k' || cmd == 'l' || cmd =='r' || cmd=='u'||cmd=='s'||cmd=='f'){
                     // 화면에 맵이 출력되어 있을때의 명령입력부분
                     screen_clear();
@@ -111,14 +116,8 @@ load_point:
                     cmd = cmd_s[0];
                 }
 
-                if(isCleared()){ // 스테이지 클리어 여부 확인
-                    stage_cleared_flag[stage-1] = 1;
-                    break;   //클리어 시 flag를 1로 set하고 break
-                }
-
                 switch(cmd){
                     case ' ':
-                    case '\n':
                     case 'h':
                     case 'j':
                     case 'k':
